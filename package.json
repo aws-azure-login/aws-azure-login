@@ -1,0 +1,31 @@
+{
+  "name": "aws-azure-login",
+  "version": "0.0.1",
+  "description": "Use Azure AZ SSO to log into the AWS CLI.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dave T. Johnson <dave@dtjohnson.net>",
+  "license": "MIT",
+  "bin": {
+    "aws-azure-login": "bin/index.js"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.3.8",
+    "bluebird": "^3.3.5",
+    "cheerio": "^0.20.0",
+    "commander": "^2.9.0",
+    "debug": "^2.3.3",
+    "ini": "^1.3.4",
+    "inquirer": "^1.2.2",
+    "lodash": "^4.17.2",
+    "node-uuid": "^1.4.7",
+    "phantom": "^2.1.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dtjohnson/aws-azure-login.git"
+  },
+  "bugs": "https://github.com/dtjohnson/aws-azure-login/issues"
+}
