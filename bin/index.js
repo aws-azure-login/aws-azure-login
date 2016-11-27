@@ -2,6 +2,9 @@
 
 "use strict";
 
+process.on('SIGINT', () => process.exit(1));
+process.on('SIGTERM', () => process.exit(1));
+
 const commander = require("commander");
 const Promise = require("bluebird");
 
