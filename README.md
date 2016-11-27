@@ -9,3 +9,23 @@ If your organization uses [Azure Active Directory](https://azure.microsoft.com) 
 You should first install the AWS CLI using the [installation instructions](http://docs.aws.amazon.com/cli/latest/userguide/installing.html). Then install aws-azure-login:
 
     $ npm install -g aws-azure-login
+
+## Usage
+
+TODO
+
+## Getting Your Tenant and App ID URI
+
+TODO
+
+## How It Works
+
+TODO
+
+## Troubleshooting
+
+TODO
+
+## Support for Other Authentication Providers
+
+TODO
