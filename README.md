@@ -45,7 +45,7 @@ Your Azure AD system admin should be able to provide you with your Tenant ID and
 
 1. Load the myapps.microsoft.com page.
 2. Click the chicklet for the login you want.
-3. In the window the pops open quickly copy + paste the login.microsoftonline.com URL. (If you miss it just try again. You can also open the developer console with nagivation preservation to capture the URL.)
+3. In the window the pops open quickly copy the login.microsoftonline.com URL. (If you miss it just try again. You can also open the developer console with nagivation preservation to capture the URL.)
 4. The GUID right after login.microsoftonline.com/ is the tenant ID.
 5. Copy the SAMLRequest URL param.
 6. Paste it into a URL decoder ([like this one](https://www.samltool.com/url.php)) and decode.
