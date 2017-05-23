@@ -37,6 +37,8 @@ You will be prompted for your username and password. If MFA is required you'll a
 
     $ aws-azure-login --profile foo
 
+Alternatively, you can set the `AWS_PROFILE` environmental variable to the name of the profile.
+
 Now you can use the AWS CLI as usual!
 
 ## Getting Your Tenant ID and App ID URI

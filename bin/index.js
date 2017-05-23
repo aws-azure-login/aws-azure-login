@@ -17,7 +17,7 @@ commander
     .option("--configure", "Configure the profile")
     .parse(process.argv);
 
-const profileName = commander.profile || "default";
+const profileName = commander.profile || process.env.AWS_PROFILE || "default";
 
 Promise.resolve()
     .then(() => {
