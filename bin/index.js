@@ -6,9 +6,8 @@ process.on('SIGINT', () => process.exit(1));
 process.on('SIGTERM', () => process.exit(1));
 
 const commander = require("commander");
-const Promise = require("bluebird");
 
-const configureProfile = require("../lib/configureProfile");
+const configureProfileAsync = require("../lib/configureProfileAsync");
 const CLIError = require("../lib/CLIError");
 const login = require("../lib/login");
 
@@ -21,10 +20,14 @@ const profileName = commander.profile || process.env.AWS_PROFILE || "default";
 
 Promise.resolve()
     .then(() => {
-        if (commander.configure) return configureProfile(profileName);
-        return login(profileName);
+        if (commander.configure) return configureProfileAsync(profileName);
+        return login.loginAsync(profileName);
     })
-    .catch(CLIError, err => {
-        console.error(err.message);
-        process.exit(2);
+    .catch(err => {
+        if (err.name === "CLIError") {
+            console.error(err.message);
+            process.exit(2);
+        } else {
+            console.log(err);
+        }
     });
