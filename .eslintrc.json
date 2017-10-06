@@ -9,11 +9,11 @@
   },
   "rules": {
     /* Possible Errors */
-    "no-await-in-loop": "error",
+    //"no-await-in-loop"
     "no-compare-neg-zero": "error",
     "no-cond-assign": "error",
     //"no-console"
-    "no-constant-condition": "error",
+    //"no-constant-condition"
     "no-control-regex": "error",
     "no-debugger": "error",
     "no-dupe-args": "error",
@@ -77,7 +77,7 @@
     "no-iterator": "error",
     "no-labels": "error",
     "no-lone-blocks": "error",
-    "no-loop-func": "error",
+    //"no-loop-func"
     //"no-magic-numbers"
     "no-multi-spaces": "error",
     //"no-multi-str"
