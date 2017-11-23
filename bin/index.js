@@ -14,14 +14,16 @@ const login = require("../lib/login");
 commander
     .option("--profile <name>", "The name of the profile to log in with (or configure)")
     .option("--configure", "Configure the profile")
+    .option("--mode <mode>", "'cli' to hide the login page and perform the login through the CLI (default behavior), 'gui' to perform the login through the Azure GUI (more reliable but only works on GUI operating system), 'debug' to show the login page but perform the login through the CLI (useful to debug issues with the CLI login)")
     .parse(process.argv);
 
 const profileName = commander.profile || process.env.AWS_PROFILE || "default";
+const mode = commander.mode || 'cli';
 
 Promise.resolve()
     .then(() => {
         if (commander.configure) return configureProfileAsync(profileName);
-        return login.loginAsync(profileName);
+        return login.loginAsync(profileName, mode);
     })
     .catch(err => {
         if (err.name === "CLIError") {

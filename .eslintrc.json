@@ -170,7 +170,7 @@
     //"linebreak-style"
     "lines-around-comment": ["error", { "beforeBlockComment": true, "beforeLineComment": true, "allowBlockStart": true, "allowObjectStart": true, "allowArrayStart": true }],
     "lines-around-directive": "error",
-    "max-depth": "error",
+    //"max-depth"
     //"max-len"
     //"max-lines"
     "max-nested-callbacks": "error",
