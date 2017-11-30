@@ -6,9 +6,11 @@ If your organization uses [Azure Active Directory](https://azure.microsoft.com) 
 
 ## Installation
 
-You should first install the AWS CLI using the [installation instructions](http://docs.aws.amazon.com/cli/latest/userguide/installing.html). Then install [Node.js](https://nodejs.org/). Finally, install aws-azure-login:
+You should first install the AWS CLI using the [installation instructions](http://docs.aws.amazon.com/cli/latest/userguide/installing.html). Then install [Node.js](https://nodejs.org/). aws-azure-login uses `async/await` so you'll need at least Node v7.6.0. Finally, install aws-azure-login:
 
     npm install -g aws-azure-login
+
+Note that on Linux you'll need to make sure the [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch) are installed. Additionally, puppeteer [doesn't seem to play well](https://github.com/GoogleChrome/puppeteer/issues/375) with npm global installs to /usr. You'll need to globally install to the user home directory using [these instructions](https://docs.npmjs.com/getting-started/fixing-npm-permissions#option-2-change-npms-default-directory-to-another-directory).
 
 ## Usage
 
