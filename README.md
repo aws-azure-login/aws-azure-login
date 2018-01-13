@@ -2,7 +2,7 @@
 [![npm module downloads per month](http://img.shields.io/npm/dm/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
 
 # aws-azure-login
-If your organization uses [Azure Active Directory](https://azure.microsoft.com) to provide SSO login to the AWS console, then there is no easy way to use the [AWS CLI](https://aws.amazon.com/cli/). This tool fixes that. It lets you use the normal Azure AD login (including MFA) from a command line to create a federated AWS session and places the temporary credentials in the proper place for the AWS CLI.
+If your organization uses [Azure Active Directory](https://azure.microsoft.com) to provide SSO login to the AWS console, then there is no easy way to log in on the command line or to use the [AWS CLI](https://aws.amazon.com/cli/). This tool fixes that. It lets you use the normal Azure AD login (including MFA) from a command line to create a federated AWS session and places the temporary credentials in the proper place for the AWS CLI and SDKs.
 
 ## Installation
 
@@ -13,9 +13,9 @@ Install [Node.js](https://nodejs.org/) v7.6.0 or higher. Then install aws-azure-
 
 ### Linux
 
-In Linux you can either install for all users or just the current user. In either case, you must first install First install any the [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). 
+In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v7.6.0 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions. 
 
-#### Install for All Users
+#### Option A: Install for All Users
 
 Install aws-azure-login globally with npm:
 
@@ -25,7 +25,7 @@ Puppeteer doesn't install globally with execution permissions for all users so y
 
     sudo chmod -R go+rx $(npm root -g)
 
-#### Install Only for Current User
+#### Option B: Install Only for Current User
 
 First configure npm to install global packages in [your home directory](https://docs.npmjs.com/getting-started/fixing-npm-permissions):
    
@@ -48,6 +48,13 @@ A Docker image has been built with aws-azure-login preinstalled. You simply need
     
 The Docker image is configured with an entrypoint so you can just feed any arguments in at the end.
 
+You can also put the docker-launch.sh script into your bin directory for the aws-azure-login command to function as usual:
+
+    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/dtjohnson/aws-azure-login/master/docker-launch.sh
+    sudo chmod o+x /usr/local/bin/aws-azure-login
+
+Now just run `aws-azure-login`.
+
 ## Usage
 
 ### Configuration
@@ -62,17 +69,17 @@ You'll need your Azure Tenant ID and the App ID URI. To configure a named profil
     
 ### Logging In
 
-Once the CLIs are configured, you can log in. For the default profile, just run:
+Once aws-azure-login is configured, you can log in. For the default profile, just run:
 
     aws-azure-login
     
-You will be prompted for your username and password. If MFA is required you'll also be prompted for a verification code. To log in with a named profile:
+You will be prompted for your username and password. If MFA is required you'll also be prompted for a verification code or mobile device approval. To log in with a named profile:
 
     aws-azure-login --profile foo
 
-Alternatively, you can set the `AWS_PROFILE` environmental variable to the name of the profile.
+Alternatively, you can set the `AWS_PROFILE` environmental variable to the name of the profile just like the AWS CLI.
 
-Now you can use the AWS CLI as usual!
+Once you log in you can use the AWS CLI or SDKs as usual!
 
 If you are logging in on an operating system with a GUI, you can log in using the actual Azure web form instead of the CLI:
 
