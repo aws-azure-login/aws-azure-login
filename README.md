@@ -6,27 +6,58 @@ If your organization uses [Azure Active Directory](https://azure.microsoft.com) 
 
 ## Installation
 
-You should first install the AWS CLI using the [installation instructions](http://docs.aws.amazon.com/cli/latest/userguide/installing.html). Then install [Node.js](https://nodejs.org/). aws-azure-login uses `async/await` so you'll need at least Node v7.6.0. Finally, install aws-azure-login:
+### Windows
+Install [Node.js](https://nodejs.org/) v7.6.0 or higher. Then install aws-azure-login with npm:
 
     npm install -g aws-azure-login
 
-Note that on Linux you'll need to make sure the [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch) are installed. Additionally, puppeteer [doesn't seem to play well](https://github.com/GoogleChrome/puppeteer/issues/375) with npm global installs to /usr. You'll need to globally install to the user home directory using [these instructions](https://docs.npmjs.com/getting-started/fixing-npm-permissions#option-2-change-npms-default-directory-to-another-directory).
+### Linux
+
+In Linux you can either install for all users or just the current user. In either case, you must first install First install any the [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). 
+
+#### Install for All Users
+
+Install aws-azure-login globally with npm:
+
+    sudo npm install -g aws-azure-login --unsafe-perm
+    
+Puppeteer doesn't install globally with execution permissions for all users so you'll need to modify them:
+
+    sudo chmod -R go+rx $(npm root -g)
+
+#### Install Only for Current User
+
+First configure npm to install global packages in [your home directory](https://docs.npmjs.com/getting-started/fixing-npm-permissions):
+   
+    mkdir ~/.npm-global
+    npm config set prefix '~/.npm-global'
+    export PATH=~/.npm-global/bin:$PATH
+    source ~/.profile
+    echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.profile
+    source ~/.profile
+     
+Then install aws-azure-login:
+
+    npm install -g aws-azure-login
+
+### Docker
+
+A Docker image has been built with aws-azure-login preinstalled. You simply need to run the command with a volume mounted to your AWS configuration directory.
+
+    docker run --rm -it -v ~/.aws:/root/.aws dtjohnson/aws-azure-login
+    
+The Docker image is configured with an entrypoint so you can just feed any arguments in at the end.
 
 ## Usage
 
 ### Configuration
 
-Before using aws-azure-login, you should first [configure the AWS CLI](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html). To configure the default profile, run:
-
-    aws configure
-    
-When prompted for credentials just leave the fields blank. Then configure the aws-azure-login client:
+To configure the aws-azure-login client run:
 
     aws-azure-login --configure
     
 You'll need your Azure Tenant ID and the App ID URI. To configure a named profile, use the --profile flag.
 
-    aws configure --profile foo
     aws-azure-login --configure --profile foo
     
 ### Logging In
@@ -48,6 +79,10 @@ If you are logging in on an operating system with a GUI, you can log in using th
     aws-azure-login --mode gui
 
 Logging in with GUI mode is likely to be much more reliable.
+
+_Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome will fail to launch:
+
+    aws-azure-login --no-sandbox
 
 ## Getting Your Tenant ID and App ID URI
 
