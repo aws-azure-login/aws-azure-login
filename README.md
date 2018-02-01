@@ -91,6 +91,10 @@ _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome
 
     aws-azure-login --no-sandbox
 
+### Behind corporate proxy
+
+If behind corporate proxy, then just set https\_proxy env variable.
+
 ## Getting Your Tenant ID and App ID URI
 
 Your Azure AD system admin should be able to provide you with your Tenant ID and App ID URI. If you can't get it from them, you can scrape it from a login page from the myapps.microsoft.com page.
