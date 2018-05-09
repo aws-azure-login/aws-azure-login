@@ -1,4 +1,4 @@
-FROM node
+FROM node:8
 
 # Install Puppeteer dependencies: https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch
 RUN apt-get update \
