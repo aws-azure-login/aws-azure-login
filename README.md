@@ -59,6 +59,8 @@ Now just run `aws-azure-login`.
 
 ### Configuration
 
+#### AWS
+
 To configure the aws-azure-login client run:
 
     aws-azure-login --configure
@@ -66,7 +68,28 @@ To configure the aws-azure-login client run:
 You'll need your Azure Tenant ID and the App ID URI. To configure a named profile, use the --profile flag.
 
     aws-azure-login --configure --profile foo
-    
+
+#### Environment Variables
+
+You can optionally store your responses as environment variables:
+
+* `AZURE_TENANT_ID`
+* `AZURE_APP_ID_URI`
+* `AZURE_DEFAULT_USERNAME`
+* `AZURE_DEFAULT_PASSWORD`
+* `AZURE_DEFAULT_ROLE_ARN`
+* `AZURE_DEFAULT_DURATION_HOURS`
+
+To avoid having to ``<Enter>`` through the prompts after setting these environment variables, use the `--no-prompt` option when running the command.
+
+    aws-azure-login --no-prompt
+
+Use the `HISTCONTROL` environment variable to avoid storing the password in your bash history (notice the space at the beginning):
+
+    $ HISTCONTROL=ignoreboth
+    $  export AZURE_DEFAULT_PASSWORD=mypassword
+    $ aws-azure-login
+
 ### Logging In
 
 Once aws-azure-login is configured, you can log in. For the default profile, just run:
