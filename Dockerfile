@@ -1,4 +1,4 @@
-FROM node:8
+FROM node:8.11.3-slim
 
 # Install Puppeteer dependencies: https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch
 RUN apt-get update \
@@ -40,7 +40,9 @@ RUN apt-get update \
     libnss3 \
     lsb-release \
     xdg-utils \
-    wget
+    wget \
+ && apt-get -q -y clean \
+ && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
 COPY package.json package-lock.json /aws-azure-login/
 
