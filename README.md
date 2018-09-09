@@ -76,6 +76,23 @@ To use aws-azure-login with AWS GovCloud, set the `region` profile property in y
 * us-gov-west-1
 * us-gov-east-1
 
+#### Staying logged in, skip username/password for future logins
+
+During the configuration you can decide to stay logged in:
+
+    ? Stay logged in: skip authentication while refreshing aws credentials (true|false) (false)
+
+If you set this configuration to true, the usual authentication with username/password/MFA is skipped as it's using session cookies to remember your identity. This enables you to use `--no-prompt` without the need to store your password anywhere, it's an alternative for using environment variables as described below.
+As soon as you went through the full login procedure once, you can just use:
+
+    aws-azure-login --no-prompt
+
+or
+
+    aws-azure-login --profile foo --no-prompt
+
+to refresh your aws credentials.
+
 #### Environment Variables
 
 You can optionally store your responses as environment variables:
