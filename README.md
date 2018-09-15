@@ -142,6 +142,21 @@ _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome
 
 If behind corporate proxy, then just set https\_proxy env variable.
 
+## Automation
+
+### Renew credentials for all configured profiles
+
+You can renew credentials for all configured profiles in one run. This is especially useful, if the maximum session length on AWS side is configured to a low value due to security constraints. Just run:
+
+    aws-azure-login --all-profiles
+
+If you configure all profiles to stay logged in, you can easily skip the prompts:
+
+    aws-azure-login --all-profiles --no-prompt
+
+This will allow you to automate the credentials refresh procedure, eg. by running a cronjob every 5 minutes.
+To skip unnecessary calls, the credentials are only getting refreshed if the time to expire is lower than 11 minutes.
+
 ## Getting Your Tenant ID and App ID URI
 
 Your Azure AD system admin should be able to provide you with your Tenant ID and App ID URI. If you can't get it from them, you can scrape it from a login page from the myapps.microsoft.com page.
