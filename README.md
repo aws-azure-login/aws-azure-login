@@ -114,6 +114,10 @@ _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome
 
     aws-azure-login --no-sandbox
 
+### Logging In To Multiple Profiles
+
+Adding the option --regex treats the profile name as a regex pattern - each matching profile will be assumed. People that work with many accounts or profiles and need to operate across them may find this useful.
+
 ### Behind corporate proxy
 
 If behind corporate proxy, then just set https\_proxy env variable.
