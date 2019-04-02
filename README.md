@@ -146,6 +146,16 @@ On Windows:
     set DEBUG=aws-azure-login
     aws-azure-login
 
+## Customisation
+
+Some Azure portals have markup or steps that do not fit the standard flow. You can overcome this by specifying your own custom states to extend
+the defaults included in the `lib/login.js` file. There are two ways to specify this:
+
+    - in your aws config file, specifying the parameter `azure_custom_login_statefile`
+    - on the command line, specifying the `--add-login-states <file>` (overrides aws config setting)
+
+If using the aws config file parameter, you must specify an absolute path to your customisation file. The command line parameter can accept relative paths.
+
 ## Support for Other Authentication Providers
 
 Obviously, this tool only supports Azure AD as an identity provider. However, there is a lot of similarity with how other logins with other providers would work (especially if they are SAML providers). If you are interested in building support for a different provider let me know. It would be great to build a more generic AWS CLI login tool with plugins for the various providers.
