@@ -1,4 +1,4 @@
-FROM node:8.11.3-slim
+FROM node:8.16.0-slim
 
 # Install Puppeteer dependencies: https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch
 RUN apt-get update \
