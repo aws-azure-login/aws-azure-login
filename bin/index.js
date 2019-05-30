@@ -19,6 +19,7 @@ commander
     .option("--no-prompt", "Do not prompt for input and accept the default choice", false)
     .option("--enable-chrome-network-service", "Enable Chromium's Network Service (needed when login provider redirects with 3XX)")
     .option("--no-verify-ssl", "Disable SSL Peer Verification for connections to AWS (no effect if behind proxy)")
+    .option("--enable-chrome-seamless-sso", "Enable Chromium's pass-through authentication with Azure Active Directory Seamless Single Sign-On")
     .parse(process.argv);
 
 const profileName = commander.profile || process.env.AWS_PROFILE || "default";
@@ -27,11 +28,12 @@ const disableSandbox = !commander.sandbox;
 const noPrompt = !commander.prompt;
 const enableChromeNetworkService = commander.enableChromeNetworkService;
 const awsNoVerifySsl = !commander.verifySsl;
+const enableChromeSeamlessSso = commander.enableChromeSeamlessSso;
 
 Promise.resolve()
     .then(() => {
         if (commander.configure) return configureProfileAsync(profileName);
-        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl);
+        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso);
     })
     .catch(err => {
         if (err.name === "CLIError") {
