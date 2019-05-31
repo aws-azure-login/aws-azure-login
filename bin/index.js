@@ -35,7 +35,7 @@ const forceRefresh = commander.forceRefresh;
 if (commander.allProfiles) {
     Promise.resolve()
         .then(() => {
-            return login.loginAll(mode, disableSandbox, noPrompt, forceRefresh);
+            return login.loginAll(mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, forceRefresh);
         })
         .catch(err => {
             if (err.name === "CLIError") {
