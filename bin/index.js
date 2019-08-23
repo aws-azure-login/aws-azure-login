@@ -11,6 +11,13 @@ const configureProfileAsync = require("../lib/configureProfileAsync");
 const CLIError = require("../lib/CLIError");
 const login = require("../lib/login");
 
+function commaSeparatedList(value, dummyPrevious) {
+    return value
+        .split(',')
+        .map(entry => entry.trim())
+        .filter(v => (v !== (undefined || null || '')));
+}
+
 commander
     .option("--profile <name>", "The name of the profile to log in with (or configure)")
     .option("--configure", "Configure the profile")
@@ -20,6 +27,7 @@ commander
     .option("--enable-chrome-network-service", "Enable Chromium's Network Service (needed when login provider redirects with 3XX)")
     .option("--no-verify-ssl", "Disable SSL Peer Verification for connections to AWS (no effect if behind proxy)")
     .option("--enable-chrome-seamless-sso", "Enable Chromium's pass-through authentication with Azure Active Directory Seamless Single Sign-On")
+    .option("--auth-whitelist <csv>", "Extend the SPNEGO whitelist next to the default AAD SSO domain", commaSeparatedList)
     .parse(process.argv);
 
 const profileName = commander.profile || process.env.AWS_PROFILE || "default";
@@ -29,11 +37,12 @@ const noPrompt = !commander.prompt;
 const enableChromeNetworkService = commander.enableChromeNetworkService;
 const awsNoVerifySsl = !commander.verifySsl;
 const enableChromeSeamlessSso = commander.enableChromeSeamlessSso;
+const authWhitelist = commander.authWhitelist || [];
 
 Promise.resolve()
     .then(() => {
         if (commander.configure) return configureProfileAsync(profileName);
-        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso);
+        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, authWhitelist);
     })
     .catch(err => {
         if (err.name === "CLIError") {
