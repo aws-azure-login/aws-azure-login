@@ -27,7 +27,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dtjohnson/aws-azure-login.git"
+    "url": "https://github.com/sportradar/aws-azure-login.git"
   },
-  "bugs": "https://github.com/dtjohnson/aws-azure-login/issues"
+  "bugs": "https://github.com/sportradar/aws-azure-login/issues"
 }
