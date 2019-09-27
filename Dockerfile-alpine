@@ -1,0 +1,34 @@
+FROM alpine:edge as builder
+RUN apk add --no-cache \
+        nodejs \
+        npm
+
+# Tell Puppeteer to skip installing Chrome. We'll be using the installed package.
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD="true" \
+    CHROME_BIN="/usr/bin/chromium-browser"
+
+COPY package.json /aws-azure-login/
+COPY bin /aws-azure-login/bin
+COPY lib /aws-azure-login/lib
+
+RUN cd /aws-azure-login \
+    && npm install --production && npm audit
+
+# Final image starts here
+FROM alpine:edge
+
+# Installs latest Chromium
+RUN apk add --no-cache \
+      nodejs \
+      chromium \
+    && rm -rf /usr/include \
+    && rm -rf /var/cache/apk/* /root/.node-gyp /usr/share/man /tmp/*
+
+
+# Tell Puppeteer to use the installed package.
+ENV CHROME_BIN="/usr/bin/chromium-browser"
+
+COPY --from=builder /aws-azure-login/ /aws-azure-login/
+
+WORKDIR /aws-azure-login
+ENTRYPOINT ["node", "/aws-azure-login/bin/index.js", "--no-sandbox"]
