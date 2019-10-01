@@ -10,7 +10,8 @@
   },
   "scripts": {
     "start": "bin/index.js",
-    "eslint": "eslint ."
+    "eslint": "eslint .",
+    "test": "npm run eslint"
   },
   "engines": {
     "node": ">=8.0"
