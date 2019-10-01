@@ -1,4 +1,4 @@
-name: Node.js Package
+name: Main
 
 on:
   pull_request:
@@ -17,4 +17,4 @@ jobs:
         with:
           node-version: 8
       - run: npm ci
-      - run: npm run eslint
+      - run: npm test
