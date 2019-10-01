@@ -18,8 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - run: sudo snap install snapcraft --classic
-      - run: sudo snap install multipass --edge
+      - run: sudo snap install --edge multipass
+      - run: sudo snap install --classic snapcraft
       - run: sudo snapcraft
       - run: |
              sudo mkdir .snapcraft
