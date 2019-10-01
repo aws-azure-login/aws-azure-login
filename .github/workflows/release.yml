@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - run: sudo snap install --classic multipass
       - run: sudo snap install --classic snapcraft
       - run: sudo snapcraft
       - run: |
