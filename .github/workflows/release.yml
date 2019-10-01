@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: sudo snap install snapcraft --classic
-      - run: sudo snap install multipass --classic
+      - run: sudo snap install multipass --edge
       - run: sudo snapcraft
       - run: |
              sudo mkdir .snapcraft
