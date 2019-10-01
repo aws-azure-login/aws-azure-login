@@ -44,13 +44,13 @@ Then install aws-azure-login:
 
 A Docker image has been built with aws-azure-login preinstalled. You simply need to run the command with a volume mounted to your AWS configuration directory.
 
-    docker run --rm -it -v ~/.aws:/root/.aws dtjohnson/aws-azure-login
-
+    docker run --rm -it -v ~/.aws:/root/.aws sportradar/aws-azure-login
+    
 The Docker image is configured with an entrypoint so you can just feed any arguments in at the end.
 
 You can also put the docker-launch.sh script into your bin directory for the aws-azure-login command to function as usual:
 
-    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/dtjohnson/aws-azure-login/master/docker-launch.sh
+    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/sportradar/aws-azure-login/master/docker-launch.sh
     sudo chmod o+x /usr/local/bin/aws-azure-login
 
 Now just run `aws-azure-login`.
