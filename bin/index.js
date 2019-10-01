@@ -8,7 +8,6 @@ process.on('SIGTERM', () => process.exit(1));
 const commander = require("commander");
 
 const configureProfileAsync = require("../lib/configureProfileAsync");
-const CLIError = require("../lib/CLIError");
 const login = require("../lib/login");
 
 commander
