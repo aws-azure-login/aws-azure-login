@@ -19,8 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: sudo snap install snapcraft --classic
-      - run: snapcraft
+      - run: sudo snap install multipass --classic
+      - run: sudo snapcraft
       - run: |
-             mkdir .snapcraft
-             echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode --ignore-garbage > .snapcraft/snapcraft.cfg
-             snapcraft push *.snap --release stable
+             sudo mkdir .snapcraft
+             echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | sudo base64 --decode --ignore-garbage > .snapcraft/snapcraft.cfg
+             sudo snapcraft push *.snap --release stable
