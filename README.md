@@ -13,14 +13,14 @@ Install [Node.js](https://nodejs.org/) v7.6.0 or higher. Then install aws-azure-
 
 ### Linux
 
-In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v7.6.0 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions. 
+In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v7.6.0 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions.
 
 #### Option A: Install for All Users
 
 Install aws-azure-login globally with npm:
 
     sudo npm install -g aws-azure-login --unsafe-perm
-    
+
 Puppeteer doesn't install globally with execution permissions for all users so you'll need to modify them:
 
     sudo chmod -R go+rx $(npm root -g)
@@ -28,14 +28,14 @@ Puppeteer doesn't install globally with execution permissions for all users so y
 #### Option B: Install Only for Current User
 
 First configure npm to install global packages in [your home directory](https://docs.npmjs.com/getting-started/fixing-npm-permissions):
-   
+
     mkdir ~/.npm-global
     npm config set prefix '~/.npm-global'
     export PATH=~/.npm-global/bin:$PATH
     source ~/.profile
     echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.profile
     source ~/.profile
-     
+
 Then install aws-azure-login:
 
     npm install -g aws-azure-login
@@ -45,7 +45,7 @@ Then install aws-azure-login:
 A Docker image has been built with aws-azure-login preinstalled. You simply need to run the command with a volume mounted to your AWS configuration directory.
 
     docker run --rm -it -v ~/.aws:/root/.aws sportradar/aws-azure-login
-    
+
 The Docker image is configured with an entrypoint so you can just feed any arguments in at the end.
 
 You can also put the docker-launch.sh script into your bin directory for the aws-azure-login command to function as usual:
@@ -64,10 +64,17 @@ Now just run `aws-azure-login`.
 To configure the aws-azure-login client run:
 
     aws-azure-login --configure
-    
+
 You'll need your Azure Tenant ID and the App ID URI. To configure a named profile, use the --profile flag.
 
     aws-azure-login --configure --profile foo
+
+##### GovCloud Support
+
+To use aws-azure-login with AWS GovCloud, set the `region` profile property in your ~/.aws/config to the one of the GovCloud regions:
+
+* us-gov-west-1
+* us-gov-east-1
 
 #### Environment Variables
 
@@ -95,7 +102,7 @@ Use the `HISTCONTROL` environment variable to avoid storing the password in your
 Once aws-azure-login is configured, you can log in. For the default profile, just run:
 
     aws-azure-login
-    
+
 You will be prompted for your username and password. If MFA is required you'll also be prompted for a verification code or mobile device approval. To log in with a named profile:
 
     aws-azure-login --profile foo
