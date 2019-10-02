@@ -59,4 +59,5 @@ jobs:
           mkdir -p .snapcraft
           echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode --ignore-garbage > .snapcraft/snapcraft.cfg
           snapcraft
+          snapcraft login
           snapcraft push *.snap --release stable
