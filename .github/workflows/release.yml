@@ -56,7 +56,6 @@ jobs:
       - uses: actions/checkout@v1
       - name: Publish to Snap Store
         run: |
-          mkdir -p .snapcraft
           echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode --ignore-garbage > snapcraft-login
           snapcraft
           snapcraft login --with snapcraft-login
