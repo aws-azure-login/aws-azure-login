@@ -27,7 +27,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-docker:
     needs: build
@@ -45,11 +45,13 @@ jobs:
   publish-snap:
     needs: build
     runs-on: ubuntu-latest
+    container:
+      image: snapcore/snapcraft
     steps:
       - uses: actions/checkout@v1
-      - run: sudo snap install snapcraft --classic
-      - run: snapcraft
-      - run: |
-             mkdir .snapcraft
-             echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode --ignore-garbage > .snapcraft/snapcraft.cfg
-             snapcraft push *.snap --release stable
+      - name: Publish to Snap Store
+        run: |
+          echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode > snapcraft-login
+          snapcraft login --with snapcraft-login
+          snapcraft
+          snapcraft push *.snap --release stable
