@@ -13,8 +13,8 @@ confinement: strict
 parts:
   sportradar-aws-azure-login:
     plugin: nodejs
-      nodejs-version: 8
-      nodejs-package-manager: npm
+    nodejs-version: '8'
+    nodejs-package-manager: npm
     source: .
 
 apps:
