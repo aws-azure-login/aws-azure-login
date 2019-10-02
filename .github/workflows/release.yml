@@ -57,6 +57,6 @@ jobs:
       - name: Publish to Snap Store
         run: |
           echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode > snapcraft-login
-          snapcraft
           snapcraft login --with snapcraft-login
+          snapcraft
           snapcraft push *.snap --release stable
