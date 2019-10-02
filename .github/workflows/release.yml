@@ -1,14 +1,9 @@
 name: Release
 
 on:
-  pull_request:
-    branches:
-      - master
-
-# on:
-#   push:
-#     tags:
-#       - '*'
+  push:
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -21,31 +16,31 @@ jobs:
       - run: npm ci
       - run: npm test
 
-  # publish-npm:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - uses: actions/setup-node@v1
-  #       with:
-  #         node-version: 8
-  #         registry-url: https://registry.npmjs.org/
-  #     - run: npm publish
-  #       env:
-  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 8
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-  # publish-docker:
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - name: Publish to Registry
-  #       uses: elgohr/Publish-Docker-Github-Action@master
-  #       with:
-  #         name: sportradar/aws-azure-login
-  #         username: ${{ secrets.DOCKER_USERNAME }}
-  #         password: ${{ secrets.DOCKER_PASSWORD }}
-  #         dockerfile: Dockerfile
+  publish-docker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Publish to Registry
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: sportradar/aws-azure-login
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          dockerfile: Dockerfile
 
   publish-snap:
     needs: build
