@@ -57,7 +57,7 @@ jobs:
       - name: Publish to Snap Store
         run: |
           mkdir -p .snapcraft
-          echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode --ignore-garbage > .snapcraft/snapcraft.cfg
+          echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode --ignore-garbage > snapcraft-login
           snapcraft
-          snapcraft login
+          snapcraft login --with snapcraft-login
           snapcraft push *.snap --release stable
