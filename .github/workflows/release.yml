@@ -52,11 +52,10 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: snapcore/snapcraft
-      volumes:
-        - $GITHUB_WORKSPACE
     steps:
       - uses: actions/checkout@v1
-      - run: |
+      - name: Publish to Snap Store
+        run: |
           ls -l
           mkdir -p .snapcraft
           echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode --ignore-garbage > .snapcraft/snapcraft.cfg
