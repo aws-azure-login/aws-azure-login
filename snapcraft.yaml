@@ -1,5 +1,5 @@
 
-name: sportradar-aws-azure-login
+name: aws-azure-login
 version: git
 summary: Use Azure AD SSO to log into the AWS via CLI.
 description: |
