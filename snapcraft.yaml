@@ -11,12 +11,12 @@ base: core18
 confinement: strict
 
 parts:
-  sportradar-aws-azure-login:
+  aws-azure-login:
     plugin: nodejs
     nodejs-version: '8.16.1'
     nodejs-package-manager: npm
     source: .
 
 apps:
-  sportradar-aws-azure-login:
+  aws-azure-login:
     command: aws-azure-login
