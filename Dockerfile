@@ -49,7 +49,6 @@ COPY package.json package-lock.json /aws-azure-login/
 RUN cd /aws-azure-login \
  && npm install --production
 
-COPY bin /aws-azure-login/bin
 COPY lib /aws-azure-login/lib
 
-ENTRYPOINT ["node", "/aws-azure-login/bin", "--no-sandbox"]
+ENTRYPOINT ["node", "/aws-azure-login/lib", "--no-sandbox"]

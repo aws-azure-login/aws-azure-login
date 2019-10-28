@@ -1,12 +1,19 @@
 {
-  "root": true,
   "env": {
     "node": true,
     "es6": true
   },
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "ecmaVersion": 2017
+    "project": "./tsconfig.json"
   },
+  "plugins": ["@typescript-eslint"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
   "rules": {
     /* Possible Errors */
     //"no-await-in-loop"
@@ -39,7 +46,6 @@
     "no-unsafe-finally": "error",
     "no-unsafe-negation": "error",
     "use-isnan": "error",
-    "valid-jsdoc": 1,
     "valid-typeof": "error",
 
     /* Best Practices */
@@ -158,7 +164,7 @@
     "func-call-spacing": "error",
     "func-name-matching": "error",
     //"func-names"
-    "func-style": ["error", "expression"],
+    "func-style": ["error", "declaration"],
     //"id-blacklist"
     //"id-length"
     //"id-match"
@@ -212,8 +218,6 @@
     "operator-linebreak": ["error", "before"],
     "padded-blocks": ["error", "never"],
     "quote-props": ["error", "as-needed"],
-    //"quotes"
-    "require-jsdoc": ["warn", { "require": { "FunctionDeclaration": true, "MethodDefinition": true, "ClassDeclaration": true } }],
     "semi": "error",
     "semi-spacing": "error",
     //"sort-keys"
@@ -256,9 +260,11 @@
     "prefer-template": "error",
     "require-yield": "error",
     "rest-spread-spacing": "error",
-    "sort-imports": "error",
+    "sort-imports": "off",
     "symbol-description": "error",
-    "template-curly-spacing": "error"
+    "template-curly-spacing": "error",
     //"yield-star-spacing"
+
+    "@typescript-eslint/camelcase": "off"
   }
 }

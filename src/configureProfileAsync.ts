@@ -1,21 +1,19 @@
-"use strict";
+import inquirer from "inquirer";
+import { awsConfig } from "./awsConfig";
 
-const inquirer = require("inquirer");
-const awsConfig = require("./awsConfig");
-
-module.exports = async profileName => {
+export async function configureProfileAsync(profileName: string): Promise<void> {
     console.log(`Configuring profile '${profileName}'`);
 
     const profile = await awsConfig.getProfileConfigAsync(profileName);
     const answers = await inquirer.prompt([{
         name: "tenantId",
         message: "Azure Tenant ID:",
-        validate: input => !!input,
+        validate: (input): boolean | string => !!input,
         default: profile && profile.azure_tenant_id
     }, {
         name: "appIdUri",
         message: "Azure App ID URI:",
-        validate: input => !!input,
+        validate: (input): boolean | string => !!input,
         default: profile && profile.azure_app_id_uri
     }, {
         name: "username",
@@ -29,7 +27,7 @@ module.exports = async profileName => {
         name: "defaultDurationHours",
         message: "Default Session Duration Hours (up to 12):",
         default: (profile && profile.azure_default_duration_hours) || 1,
-        validate(input) {
+        validate: (input): boolean | string => {
             input = Number(input);
             if (input > 0 && input <= 12) return true;
             return 'Duration hours must be between 0 and 12';
@@ -45,4 +43,4 @@ module.exports = async profileName => {
     });
 
     console.log('Profile saved.');
-};
+}

@@ -6,12 +6,14 @@
   "author": "Dave T. Johnson <dave@dtjohnson.net>",
   "license": "MIT",
   "bin": {
-    "aws-azure-login": "bin/index.js"
+    "aws-azure-login": "lib/index.js"
   },
   "scripts": {
-    "start": "bin/index.js",
-    "eslint": "eslint .",
-    "test": "npm run eslint"
+    "start": "ts-node-dev src/index.ts",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "eslint": "eslint src --ext .ts",
+    "test": "npm run build && npm run eslint"
   },
   "engines": {
     "node": ">=8.0"
@@ -31,7 +33,21 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "eslint": "^6.4.0"
+    "@types/bluebird": "^3.5.28",
+    "@types/cheerio": "^0.22.13",
+    "@types/debug": "^4.1.5",
+    "@types/ini": "^1.3.30",
+    "@types/inquirer": "^6.5.0",
+    "@types/lodash": "^4.14.144",
+    "@types/mkdirp": "^0.5.2",
+    "@types/node": "^12.11.7",
+    "@types/puppeteer": "^1.20.2",
+    "@types/uuid": "^3.4.5",
+    "@typescript-eslint/eslint-plugin": "^2.5.0",
+    "@typescript-eslint/parser": "^2.5.0",
+    "eslint": "^6.4.0",
+    "ts-node-dev": "^1.0.0-pre.43",
+    "typescript": "^3.6.4"
   },
   "repository": {
     "type": "git",

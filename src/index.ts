@@ -1,14 +1,11 @@
 #!/usr/bin/env node
 
-"use strict";
+import commander from "commander";
+import { configureProfileAsync } from "./configureProfileAsync";
+import { login } from "./login";
 
 process.on('SIGINT', () => process.exit(1));
 process.on('SIGTERM', () => process.exit(1));
-
-const commander = require("commander");
-
-const configureProfileAsync = require("../lib/configureProfileAsync");
-const login = require("../lib/login");
 
 commander
     .option("--profile <name>", "The name of the profile to log in with (or configure)")
@@ -25,9 +22,9 @@ const profileName = commander.profile || process.env.AWS_PROFILE || "default";
 const mode = commander.mode || 'cli';
 const disableSandbox = !commander.sandbox;
 const noPrompt = !commander.prompt;
-const enableChromeNetworkService = commander.enableChromeNetworkService;
+const enableChromeNetworkService = !commander.enableChromeNetworkService;
 const awsNoVerifySsl = !commander.verifySsl;
-const enableChromeSeamlessSso = commander.enableChromeSeamlessSso;
+const enableChromeSeamlessSso = !commander.enableChromeSeamlessSso;
 
 Promise.resolve()
     .then(() => {

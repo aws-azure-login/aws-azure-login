@@ -1,19 +1,21 @@
-"use strict";
+import _ from "lodash";
+import Bluebird from "bluebird";
+import inquirer, { QuestionCollection } from "inquirer";
+import zlib from "zlib";
+import AWS from "aws-sdk";
+import cheerio from "cheerio";
+import uuid from "uuid";
+import puppeteer from 'puppeteer';
+import querystring from 'querystring';
+import _debug from "debug";
+import { CLIError } from "./CLIError";
+import { awsConfig, ProfileConfig } from "./awsConfig";
+import proxy from 'proxy-agent';
+import https from 'https';
+import util from "util";
 
-const _ = require("lodash");
-const Bluebird = require("bluebird");
-const inquirer = require("inquirer");
-const zlib = Bluebird.promisifyAll(require("zlib"));
-const AWS = require("aws-sdk");
-const cheerio = require("cheerio");
-const uuid = require("uuid");
-const puppeteer = require('puppeteer');
-const querystring = require('querystring');
-const debug = require("debug")('aws-azure-login');
-const CLIError = require("./CLIError");
-const awsConfig = require("./awsConfig");
-const proxy = require('proxy-agent');
-const https = require('https');
+const debug = _debug('aws-azure-login');
+const deflateRaw = util.promisify<string, Buffer>(zlib.deflateRaw);
 
 const WIDTH = 425;
 const HEIGHT = 550;
@@ -24,6 +26,11 @@ const MAX_UNRECOGNIZED_PAGE_DELAY = 30 * 1000;
 const AZURE_AD_SSO = "autologon.microsoftazuread-sso.com";
 const AWS_SAML_ENDPOINT = "https://signin.aws.amazon.com/saml";
 const AWS_GOV_SAML_ENDPOINT = "https://signin.amazonaws-us-gov.com/saml";
+
+interface Role {
+    roleArn: string;
+    principalArn: string;
+}
 
 /**
  * To proxy the input/output of the Azure login page, it's easiest to run a loop that
@@ -36,7 +43,12 @@ const states = [
     {
         name: "username input",
         selector: `input[name="loginfmt"]:not(.moveOffScreen)`,
-        async handler(page, _selected, noPrompt, defaultUsername, _defaultPassword) {
+        async handler(
+            page: puppeteer.Page,
+            _selected: puppeteer.ElementHandle,
+            noPrompt: boolean,
+            defaultUsername: string
+        ): Promise<void> {
             const error = await page.$(".alert-error");
             if (error) {
                 debug("Found error message. Displaying");
@@ -44,7 +56,7 @@ const states = [
                 console.log(errorMessage);
             }
 
-            var username;
+            let username;
 
             if (noPrompt && defaultUsername) {
                 debug("Not prompting user for username");
@@ -79,7 +91,7 @@ const states = [
             debug("Waiting for submission to finish");
             await Promise.race([
                 page.waitForSelector(`input[name=loginfmt].has-error,input[name=loginfmt].moveOffScreen`, { timeout: 60000 }),
-                (async () => {
+                (async (): Promise<void> => {
                     await Bluebird.delay(1000);
                     await page.waitForSelector(`input[name=loginfmt]`, { hidden: true, timeout: 60000 });
                 })()
@@ -89,7 +101,7 @@ const states = [
     {
         name: "account selection",
         selector: `#aadTile > div > div.table-cell.tile-img > img`,
-        async handler(page) {
+        async handler(page: puppeteer.Page): Promise<void> {
             debug("Multiple accounts associated with username.");
             const aadTile = await page.$("#aadTileTitle");
             const aadTileMessage = await page.evaluate(aadTile => aadTile.textContent, aadTile);
@@ -97,7 +109,7 @@ const states = [
             const msaTile = await page.$("#msaTileTitle");
             const msaTileMessage = await page.evaluate(msaTile => msaTile.textContent, msaTile);
 
-            var accounts = [{ message: aadTileMessage, selector: "#aadTileTitle" }, { message: msaTileMessage, selector: "#msaTileTitle" }];
+            const accounts = [{ message: aadTileMessage, selector: "#aadTileTitle" }, { message: msaTileMessage, selector: "#msaTileTitle" }];
 
             let account;
             if (accounts.length === 0) {
@@ -118,6 +130,10 @@ const states = [
                 account = _.find(accounts, ["message", answers.account]);
             }
 
+            if (!account) {
+                throw new Error("Unable to find account");
+            }
+
             debug(`Proceeding with account ${account.selector}`);
             await page.click(account.selector);
             await Bluebird.delay(500);
@@ -126,7 +142,13 @@ const states = [
     {
         name: "password input",
         selector: `input[name="Password"]:not(.moveOffScreen),input[name="passwd"]:not(.moveOffScreen)`,
-        async handler(page, _selected, noPrompt, _defaultUsername, defaultPassword) {
+        async handler(
+            page: puppeteer.Page,
+            _selected: puppeteer.ElementHandle,
+            noPrompt: boolean,
+            _defaultUsername: string,
+            defaultPassword: string
+        ): Promise<void> {
             const error = await page.$(".alert-error");
             if (error) {
                 debug("Found error message. Displaying");
@@ -135,7 +157,7 @@ const states = [
                 defaultPassword = ''; // Password error. Unset the default and allow user to enter it.
             }
 
-            var password;
+            let password;
 
             if (noPrompt && defaultPassword) {
                 debug("Not prompting user for password");
@@ -165,7 +187,7 @@ const states = [
     {
         name: 'TFA instructions',
         selector: `#idDiv_SAOTCAS_Description`,
-        async handler(page, selected) {
+        async handler(page: puppeteer.Page, selected: puppeteer.ElementHandle): Promise<void> {
             const descriptionMessage = await page.evaluate(description => description.textContent, selected);
             console.log(descriptionMessage);
 
@@ -176,7 +198,7 @@ const states = [
     {
         name: 'TFA failed',
         selector: `#idDiv_SAASDS_Description,#idDiv_SAASTO_Description`,
-        async handler(page, selected) {
+        async handler(page: puppeteer.Page, selected: puppeteer.ElementHandle): Promise<void> {
             const descriptionMessage = await page.evaluate(description => description.textContent, selected);
             throw new CLIError(descriptionMessage);
         }
@@ -184,7 +206,7 @@ const states = [
     {
         name: 'TFA code input',
         selector: "input[name=otc]:not(.moveOffScreen)",
-        async handler(page) {
+        async handler(page: puppeteer.Page): Promise<void> {
             const error = await page.$(".alert-error");
             if (error) {
                 debug("Found error message. Displaying");
@@ -218,7 +240,7 @@ const states = [
             debug("Waiting for submission to finish");
             await Promise.race([
                 page.waitForSelector(`input[name=otc].has-error,input[name=otc].moveOffScreen`, { timeout: 60000 }),
-                (async () => {
+                (async (): Promise<void> => {
                     await Bluebird.delay(1000);
                     await page.waitForSelector(`input[name=otc]`, { hidden: true, timeout: 60000 });
                 })()
@@ -228,7 +250,7 @@ const states = [
     {
         name: "Remember me",
         selector: `#KmsiDescription`,
-        async handler(page) {
+        async handler(page: puppeteer.Page): Promise<void> {
             debug("Clicking don't remember button");
             await page.click("#idBtn_Back");
 
@@ -239,15 +261,23 @@ const states = [
     {
         name: "Service exception",
         selector: "#service_exception_message",
-        async handler(page, selected) {
+        async handler(page: puppeteer.Page, selected: puppeteer.ElementHandle): Promise<void> {
             const descriptionMessage = await page.evaluate(description => description.textContent, selected);
             throw new CLIError(descriptionMessage);
         }
     }
 ];
 
-module.exports = {
-    async loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso) {
+export const login = {
+    async loginAsync(
+        profileName: string,
+        mode: string,
+        disableSandbox: boolean,
+        noPrompt: boolean,
+        enableChromeNetworkService: boolean,
+        awsNoVerifySsl: boolean,
+        enableChromeSeamlessSso: boolean
+    ): Promise<void> {
         let headless, cliProxy;
         if (mode === 'cli') {
             headless = true;
@@ -264,7 +294,7 @@ module.exports = {
 
         const profile = await this._loadProfileAsync(profileName);
         let assertionConsumerServiceURL = AWS_SAML_ENDPOINT;
-        if (profile.hasOwnProperty('region') && profile.region.startsWith('us-gov')) {
+        if (profile.region && profile.region.startsWith('us-gov')) {
             assertionConsumerServiceURL = AWS_GOV_SAML_ENDPOINT;
         }
 
@@ -272,8 +302,18 @@ module.exports = {
 
         const loginUrl = await this._createLoginUrlAsync(profile.azure_app_id_uri, profile.azure_tenant_id, assertionConsumerServiceURL);
         const samlResponse = await this._performLoginAsync(loginUrl, headless, disableSandbox, cliProxy, noPrompt, enableChromeNetworkService, profile.azure_default_username, profile.azure_default_password, enableChromeSeamlessSso);
+
+        if (!samlResponse) {
+            return;
+        }
+
         const roles = this._parseRolesFromSamlResponse(samlResponse);
         const { role, durationHours } = await this._askUserForRoleAndDurationAsync(roles, noPrompt, profile.azure_default_role_arn, profile.azure_default_duration_hours);
+
+        if (!role) {
+            return;
+        }
+
         await this._assumeRoleAsync(profileName, samlResponse, role, durationHours, awsNoVerifySsl, profile.region);
     },
 
@@ -282,9 +322,9 @@ module.exports = {
      * @returns {string} Object of environment variables
      * @private
      */
-    _loadProfileFromEnv() {
-        var env = {};
-        var options = [
+    _loadProfileFromEnv(): { [key: string]: string } {
+        const env: { [key: string]: string } = {};
+        const options = [
             'azure_tenant_id',
             'azure_app_id_uri',
             'azure_default_username',
@@ -292,17 +332,23 @@ module.exports = {
             'azure_default_role_arn',
             'azure_default_duration_hours'
         ];
-        for (var i = 0; i < options.length; i++) {
-            var opt = options[i];
-            if (process.env[opt]) {
-                env[opt] = process.env[opt];
-            } else if (process.env[opt.toUpperCase()]) {
-                env[opt] = process.env[opt.toUpperCase()];
+        for (let i = 0; i < options.length; i++) {
+            const opt = options[i];
+            const envVar = process.env[opt];
+            const envVarUpperCase = process.env[opt.toUpperCase()];
+
+            if (envVar) {
+                env[opt] = envVar;
+            } else if (envVarUpperCase) {
+                env[opt] = envVarUpperCase;
             }
         }
-        const safe_env = Object.assign({}, env, { azure_default_password: 'xxxxxxxxxx' });
+        const safeEnv = {
+            ...env,
+            azure_default_password: 'xxxxxxxxxx'
+        };
         debug('Environment');
-        debug(safe_env);
+        debug(safeEnv);
         return env;
     },
 
@@ -312,13 +358,13 @@ module.exports = {
      * @returns {Promise.<{}>} The profile.
      * @private
      */
-    async _loadProfileAsync(profileName) {
+    async _loadProfileAsync(profileName: string): Promise<ProfileConfig> {
         const profile = await awsConfig.getProfileConfigAsync(profileName);
         if (!profile) throw new CLIError(`Unknown profile '${profileName}'. You must configure it first with --configure.`);
 
-        var env = this._loadProfileFromEnv();
-        for (var prop in env) {
-            if (env.hasOwnProperty(prop)) {
+        const env = this._loadProfileFromEnv();
+        for (const prop in env) {
+            if (env[prop]) {
                 profile[prop] = env[prop] === null ? profile[prop] : env[prop];
             }
         }
@@ -337,7 +383,7 @@ module.exports = {
      * @returns {string} The login URL
      * @private
      */
-    async _createLoginUrlAsync(appIdUri, tenantId, assertionConsumerServiceURL) {
+    async _createLoginUrlAsync(appIdUri: string, tenantId: string, assertionConsumerServiceURL: string): Promise<string> {
         debug("Generating UUID for SAML request");
         const id = uuid.v4();
 
@@ -350,7 +396,7 @@ module.exports = {
         debug("Generated SAML request", samlRequest);
 
         debug("Deflating SAML");
-        const samlBuffer = await zlib.deflateRawAsync(samlRequest);
+        const samlBuffer = await deflateRaw(samlRequest);
 
         debug("Encoding SAML in base64");
         const samlBase64 = samlBuffer.toString('base64');
@@ -375,9 +421,19 @@ module.exports = {
      * @returns {Promise.<string>} The SAML response.
      * @private
      */
-    async _performLoginAsync(url, headless, disableSandbox, cliProxy, noPrompt, enableChromeNetworkService, defaultUsername, defaultPassword, enableChromeSeamlessSso) {
+    async _performLoginAsync(
+        url: string,
+        headless: boolean,
+        disableSandbox: boolean,
+        cliProxy: boolean,
+        noPrompt: boolean,
+        enableChromeNetworkService: boolean,
+        defaultUsername: string,
+        defaultPassword: string,
+        enableChromeSeamlessSso: boolean
+    ): Promise<string | undefined> {
         debug("Loading login page in Chrome");
-        let browser;
+        let browser: puppeteer.Browser | undefined;
         try {
             const args = headless ? [] : [`--app=${url}`, `--window-size=${WIDTH},${HEIGHT}`];
             if (disableSandbox) args.push('--no-sandbox');
@@ -400,7 +456,7 @@ module.exports = {
             await page.setViewport({ width: WIDTH - 15, height: HEIGHT - 35 });
 
             // Prevent redirection to AWS
-            let samlResponseData;
+            let samlResponseData: string | undefined;
             const samlResponsePromise = new Promise(resolve => {
                 page.on('request', req => {
                     const url = req.url();
@@ -413,7 +469,9 @@ module.exports = {
                             contentType: 'text/plain',
                             body: ''
                         });
-                        browser.close();
+                        if (browser) {
+                            browser.close();
+                        }
                     } else {
                         req.continue();
                     }
@@ -433,6 +491,7 @@ module.exports = {
 
             if (cliProxy) {
                 let totalUnrecognizedDelay = 0;
+                // eslint-disable-next-line no-constant-condition
                 while (true) {
                     if (samlResponseData) break;
 
@@ -483,8 +542,18 @@ module.exports = {
                 await samlResponsePromise;
             }
 
+            if (!samlResponseData) {
+                debug("SAML response not found");
+                return undefined;
+            }
+
             const samlResponse = querystring.parse(samlResponseData).SAMLResponse;
             debug("Found SAML response", samlResponse);
+
+            if (Array.isArray(samlResponse)) {
+                debug("SAML can't be an array");
+                return undefined;
+            }
 
             return samlResponse;
         } finally {
@@ -498,7 +567,7 @@ module.exports = {
      * @returns {Array.<{roleArn: string, principalArn: string}>} The roles
      * @private
      */
-    _parseRolesFromSamlResponse(assertion) {
+    _parseRolesFromSamlResponse(assertion: string): Role[] {
         debug("Converting assertion from base64 to ASCII");
         const samlText = Buffer.from(assertion, 'base64').toString("ascii");
         debug("Converted", samlText);
@@ -508,11 +577,13 @@ module.exports = {
 
         debug("Looking for role SAML attribute");
         const roles = saml("Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue").map(function () {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+            // @ts-ignore
             const roleAndPrincipal = saml(this).text();
             const parts = roleAndPrincipal.split(",");
 
             // Role / Principal claims may be in either order
-            const [roleIdx, principalIdx] = parts[0].indexOf(":role/") >= 0 ? [0, 1] : [1, 0];
+            const [roleIdx, principalIdx] = parts[0].includes(":role/") ? [0, 1] : [1, 0];
             const roleArn = parts[roleIdx].trim();
             const principalArn = parts[principalIdx].trim();
             return { roleArn, principalArn };
@@ -530,10 +601,18 @@ module.exports = {
      * @returns {Promise.<{role: string, durationHours: number}>} The selected role and duration
      * @private
      */
-    async _askUserForRoleAndDurationAsync(roles, noPrompt, defaultRoleArn, defaultDurationHours) {
+    async _askUserForRoleAndDurationAsync(
+        roles: Role[],
+        noPrompt: boolean,
+        defaultRoleArn: string,
+        defaultDurationHours: string
+    ): Promise<{
+        role: Role;
+        durationHours: number;
+    }> {
         let role;
         let durationHours;
-        const questions = [];
+        const questions: QuestionCollection[] = [];
         if (roles.length === 0) {
             throw new CLIError("No roles found in SAML response.");
         } else if (roles.length === 1) {
@@ -577,7 +656,15 @@ module.exports = {
         const answers = await inquirer.prompt(questions);
         if (!role) role = _.find(roles, ["roleArn", answers.role]);
         if (!durationHours) durationHours = answers.durationHours;
-        return { role, durationHours };
+
+        if (!role) {
+            throw new Error(`Unable to find role`);
+        }
+
+        return {
+            role,
+            durationHours
+        };
     },
 
     /**
@@ -591,19 +678,30 @@ module.exports = {
      * @returns {Promise} A promise
      * @private
      */
-    async _assumeRoleAsync(profileName, assertion, role, durationHours, awsNoVerifySsl, region) {
+    async _assumeRoleAsync(
+        profileName: string,
+        assertion: string,
+        role: Role,
+        durationHours: number,
+        awsNoVerifySsl: boolean,
+        region: string
+    ): Promise<void> {
         console.log(`Assuming role ${role.roleArn}`);
         if (process.env.https_proxy) {
             AWS.config.update({
-                httpOptions: { agent: proxy(process.env.https_proxy) }
+                httpOptions: {
+                    agent: proxy(process.env.https_proxy)
+                },
             });
         }
 
         if (awsNoVerifySsl) {
-            const opt = { rejectUnauthorized: false };
-            opt.agent = new https.Agent(opt);
             AWS.config.update({
-                httpOptions: opt
+                httpOptions: {
+                    agent: new https.Agent({
+                        rejectUnauthorized: false
+                    })
+                }
             });
         }
 
@@ -620,6 +718,12 @@ module.exports = {
             SAMLAssertion: assertion,
             DurationSeconds: Math.round(durationHours * 60 * 60)
         }).promise();
+
+        if (!res.Credentials) {
+            debug("Unable to get security credentials from AWS");
+            return;
+        }
+
         await awsConfig.setProfileCredentialsAsync(profileName, {
             aws_access_key_id: res.Credentials.AccessKeyId,
             aws_secret_access_key: res.Credentials.SecretAccessKey,
