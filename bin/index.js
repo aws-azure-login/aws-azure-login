@@ -32,32 +32,21 @@ const awsNoVerifySsl = !commander.verifySsl;
 const enableChromeSeamlessSso = commander.enableChromeSeamlessSso;
 const forceRefresh = commander.forceRefresh;
 
-if (commander.allProfiles) {
-    Promise.resolve()
-        .then(() => {
-            return login.loginAll(mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, forceRefresh);
-        })
-        .catch(err => {
-            if (err.name === "CLIError") {
-                console.error(err.message);
-                process.exit(2);
-            } else {
-                console.log(err);
-            }
-        });
-} else {
-    Promise.resolve()
-        .then(() => {
-            if (commander.configure) return configureProfileAsync(profileName);
-            return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso);
-        })
-        .catch(err => {
-            if (err.name === "CLIError") {
-                console.error(err.message);
-                process.exit(2);
-            } else {
-                console.log(err);
-            }
-        });
-}
 
+Promise.resolve()
+    .then(() => {
+        if (commander.allProfiles) {
+            return login.loginAll(mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, forceRefresh);
+        }
+
+        if (commander.configure) return configureProfileAsync(profileName);
+        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso);
+    })
+    .catch(err => {
+        if (err.name === "CLIError") {
+            console.error(err.message);
+            process.exit(2);
+        } else {
+            console.log(err);
+        }
+    });
