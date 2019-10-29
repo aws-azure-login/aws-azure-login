@@ -76,6 +76,23 @@ To use aws-azure-login with AWS GovCloud, set the `region` profile property in y
 * us-gov-west-1
 * us-gov-east-1
 
+#### Staying logged in, skip username/password for future logins
+
+During the configuration you can decide to stay logged in:
+
+    ? Stay logged in: skip authentication while refreshing aws credentials (true|false) (false)
+
+If you set this configuration to true, the usual authentication with username/password/MFA is skipped as it's using session cookies to remember your identity. This enables you to use `--no-prompt` without the need to store your password anywhere, it's an alternative for using environment variables as described below.
+As soon as you went through the full login procedure once, you can just use:
+
+    aws-azure-login --no-prompt
+
+or
+
+    aws-azure-login --profile foo --no-prompt
+
+to refresh your aws credentials.
+
 #### Environment Variables
 
 You can optionally store your responses as environment variables:
@@ -124,6 +141,21 @@ _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome
 ### Behind corporate proxy
 
 If behind corporate proxy, then just set https\_proxy env variable.
+
+## Automation
+
+### Renew credentials for all configured profiles
+
+You can renew credentials for all configured profiles in one run. This is especially useful, if the maximum session length on AWS side is configured to a low value due to security constraints. Just run:
+
+    aws-azure-login --all-profiles
+
+If you configure all profiles to stay logged in, you can easily skip the prompts:
+
+    aws-azure-login --all-profiles --no-prompt
+
+This will allow you to automate the credentials refresh procedure, eg. by running a cronjob every 5 minutes.
+To skip unnecessary calls, the credentials are only getting refreshed if the time to expire is lower than 11 minutes.
 
 ## Getting Your Tenant ID and App ID URI
 
