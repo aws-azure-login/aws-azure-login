@@ -21,6 +21,7 @@ commander
     .option("--enable-chrome-network-service", "Enable Chromium's Network Service (needed when login provider redirects with 3XX)")
     .option("--no-verify-ssl", "Disable SSL Peer Verification for connections to AWS (no effect if behind proxy)")
     .option("--enable-chrome-seamless-sso", "Enable Chromium's pass-through authentication with Azure Active Directory Seamless Single Sign-On")
+    .option("--no-disable-extensions", "Tell Puppeteer not to pass the --disable-extensions flag to Chromium")
     .parse(process.argv);
 
 const profileName = commander.profile || process.env.AWS_PROFILE || "default";
@@ -31,16 +32,17 @@ const enableChromeNetworkService = commander.enableChromeNetworkService;
 const awsNoVerifySsl = !commander.verifySsl;
 const enableChromeSeamlessSso = commander.enableChromeSeamlessSso;
 const forceRefresh = commander.forceRefresh;
+const noDisableExtensions = !commander.disableExtensions;
 
 
 Promise.resolve()
     .then(() => {
         if (commander.allProfiles) {
-            return login.loginAll(mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, forceRefresh);
+            return login.loginAll(mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, forceRefresh, noDisableExtensions);
         }
 
         if (commander.configure) return configureProfileAsync(profileName);
-        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso);
+        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, noDisableExtensions);
     })
     .catch(err => {
         if (err.name === "CLIError") {

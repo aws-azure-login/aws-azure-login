@@ -31,7 +31,7 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "eslint": "^6.4.0"
+    "eslint": "^6.6.0"
   },
   "repository": {
     "type": "git",
