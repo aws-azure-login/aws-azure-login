@@ -12,6 +12,7 @@ const login = require("../lib/login");
 
 commander
     .option("-p, --profile <name>", "The name of the profile to log in with (or configure)")
+    .option("-r, --refreshOnlyWhenExpired", "Skip credential refresh for given profile name, if they are still valid")
     .option("-a, --all-profiles", "Run for all configured profiles")
     .option("-f, --force-refresh", "Force a credential refresh, even if they are still valid")
     .option("-c, --configure", "Configure the profile")
@@ -32,6 +33,7 @@ const enableChromeNetworkService = commander.enableChromeNetworkService;
 const awsNoVerifySsl = !commander.verifySsl;
 const enableChromeSeamlessSso = commander.enableChromeSeamlessSso;
 const forceRefresh = commander.forceRefresh;
+const refreshOnlyWhenExpired = commander.refreshOnlyWhenExpired;
 const noDisableExtensions = !commander.disableExtensions;
 
 
@@ -42,7 +44,7 @@ Promise.resolve()
         }
 
         if (commander.configure) return configureProfileAsync(profileName);
-        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, noDisableExtensions);
+        return login.loginAsync(profileName, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, refreshOnlyWhenExpired, noDisableExtensions);
     })
     .catch(err => {
         if (err.name === "CLIError") {
