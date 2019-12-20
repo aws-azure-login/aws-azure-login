@@ -3,7 +3,7 @@
 // Definitions by: Kenneth Aasan <https://github.com/kennethaasan/>
 // TypeScript Version: 3.7
 
-declare module 'proxy-agent' {
+declare module "proxy-agent" {
   import { Agent, AgentOptions } from "https";
 
   export default function ProxyAgent(options: AgentOptions | string): Agent;

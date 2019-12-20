@@ -2,11 +2,13 @@
 [![npm module downloads per month](http://img.shields.io/npm/dm/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
 
 # aws-azure-login
+
 If your organization uses [Azure Active Directory](https://azure.microsoft.com) to provide SSO login to the AWS console, then there is no easy way to log in on the command line or to use the [AWS CLI](https://aws.amazon.com/cli/). This tool fixes that. It lets you use the normal Azure AD login (including MFA) from a command line to create a federated AWS session and places the temporary credentials in the proper place for the AWS CLI and SDKs.
 
 ## Installation
 
 ### Windows
+
 Install [Node.js](https://nodejs.org/) v7.6.0 or higher. Then install aws-azure-login with npm:
 
     npm install -g aws-azure-login
@@ -73,8 +75,8 @@ You'll need your Azure Tenant ID and the App ID URI. To configure a named profil
 
 To use aws-azure-login with AWS GovCloud, set the `region` profile property in your ~/.aws/config to the one of the GovCloud regions:
 
-* us-gov-west-1
-* us-gov-east-1
+- us-gov-west-1
+- us-gov-east-1
 
 #### Staying logged in, skip username/password for future logins
 
@@ -97,14 +99,14 @@ to refresh your aws credentials.
 
 You can optionally store your responses as environment variables:
 
-* `AZURE_TENANT_ID`
-* `AZURE_APP_ID_URI`
-* `AZURE_DEFAULT_USERNAME`
-* `AZURE_DEFAULT_PASSWORD`
-* `AZURE_DEFAULT_ROLE_ARN`
-* `AZURE_DEFAULT_DURATION_HOURS`
+- `AZURE_TENANT_ID`
+- `AZURE_APP_ID_URI`
+- `AZURE_DEFAULT_USERNAME`
+- `AZURE_DEFAULT_PASSWORD`
+- `AZURE_DEFAULT_ROLE_ARN`
+- `AZURE_DEFAULT_DURATION_HOURS`
 
-To avoid having to ``<Enter>`` through the prompts after setting these environment variables, use the `--no-prompt` option when running the command.
+To avoid having to `<Enter>` through the prompts after setting these environment variables, use the `--no-prompt` option when running the command.
 
     aws-azure-login --no-prompt
 
@@ -140,7 +142,7 @@ _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome
 
 ### Behind corporate proxy
 
-If behind corporate proxy, then just set https\_proxy env variable.
+If behind corporate proxy, then just set https_proxy env variable.
 
 ## Automation
 

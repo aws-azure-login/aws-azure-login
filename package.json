@@ -24,7 +24,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "eslint": "eslint . --ext .ts",
-    "test": "npm run eslint"
+    "prettier:check": "prettier --list-different \"src/**/*.ts\"",
+    "test": "npm run eslint && npm run prettier:check"
   },
   "dependencies": {
     "aws-sdk": "^2.323.0",
@@ -54,6 +55,8 @@
     "@typescript-eslint/eslint-plugin": "^2.12.0",
     "@typescript-eslint/parser": "^2.12.0",
     "eslint": "^6.6.0",
+    "eslint-config-prettier": "^6.7.0",
+    "prettier": "^1.19.1",
     "ts-node-dev": "^1.0.0-pre.44",
     "typescript": "^3.7.3"
   }

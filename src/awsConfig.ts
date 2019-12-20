@@ -5,7 +5,7 @@ import mkdirp from "mkdirp";
 import fs from "fs";
 import util from "util";
 
-const debug = _debug('aws-azure-login');
+const debug = _debug("aws-azure-login");
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -34,10 +34,18 @@ interface ProfileCredentials {
 }
 
 export const awsConfig = {
-  async setProfileConfigValuesAsync(profileName: string, values: ProfileConfig): Promise<void> {
-    const sectionName = profileName === "default" ? "default" : `profile ${profileName}`;
-    debug(`Setting config for profile '${profileName}' in section '${sectionName}'`);
-    const config = await this._loadAsync<{ [key: string]: ProfileConfig }>("config");
+  async setProfileConfigValuesAsync(
+    profileName: string,
+    values: ProfileConfig
+  ): Promise<void> {
+    const sectionName =
+      profileName === "default" ? "default" : `profile ${profileName}`;
+    debug(
+      `Setting config for profile '${profileName}' in section '${sectionName}'`
+    );
+    const config = await this._loadAsync<{ [key: string]: ProfileConfig }>(
+      "config"
+    );
 
     if (!config) {
       debug(`Unable to find config in setProfileConfigValuesAsync`);
@@ -52,10 +60,17 @@ export const awsConfig = {
     await this._saveAsync("config", config);
   },
 
-  async getProfileConfigAsync(profileName: string): Promise<ProfileConfig | undefined> {
-    const sectionName = profileName === "default" ? "default" : `profile ${profileName}`;
-    debug(`Getting config for profile '${profileName}' in section '${sectionName}'`);
-    const config = await this._loadAsync<{ [key: string]: ProfileConfig }>("config");
+  async getProfileConfigAsync(
+    profileName: string
+  ): Promise<ProfileConfig | undefined> {
+    const sectionName =
+      profileName === "default" ? "default" : `profile ${profileName}`;
+    debug(
+      `Getting config for profile '${profileName}' in section '${sectionName}'`
+    );
+    const config = await this._loadAsync<{ [key: string]: ProfileConfig }>(
+      "config"
+    );
 
     if (!config) {
       debug(`Unable to find config in getProfileConfigAsync`);
@@ -67,23 +82,37 @@ export const awsConfig = {
 
   async isProfileAboutToExpireAsync(profileName: string): Promise<boolean> {
     debug(`Getting credentials for profile '${profileName}'`);
-    const config = await this._loadAsync<{ [key: string]: ProfileCredentials }>("credentials");
+    const config = await this._loadAsync<{ [key: string]: ProfileCredentials }>(
+      "credentials"
+    );
 
     let expirationDate;
 
-    if (!config || config[profileName] === undefined || config[profileName].aws_expiration === undefined) {
+    if (
+      !config ||
+      config[profileName] === undefined ||
+      config[profileName].aws_expiration === undefined
+    ) {
       expirationDate = new Date();
     } else {
       expirationDate = new Date(config[profileName].aws_expiration);
     }
 
     const timeDifference = expirationDate.getTime() - new Date().getTime();
-    debug(`Remaining time till credential expiration: ${timeDifference / 1000}s, refresh due if time lower than: ${refreshLimitInMs / 1000}s`);
-    return (timeDifference < refreshLimitInMs);
+    debug(
+      `Remaining time till credential expiration: ${timeDifference /
+        1000}s, refresh due if time lower than: ${refreshLimitInMs / 1000}s`
+    );
+    return timeDifference < refreshLimitInMs;
   },
 
-  async setProfileCredentialsAsync(profileName: string, values: ProfileCredentials): Promise<void> {
-    const credentials = await this._loadAsync<{ [key: string]: ProfileCredentials }>("credentials");
+  async setProfileCredentialsAsync(
+    profileName: string,
+    values: ProfileCredentials
+  ): Promise<void> {
+    const credentials = await this._loadAsync<{
+      [key: string]: ProfileCredentials;
+    }>("credentials");
 
     if (!credentials) {
       debug(`Unable to find credentials in setProfileCredentialsAsync`);
@@ -97,14 +126,16 @@ export const awsConfig = {
 
   async getAllProfileNames(): Promise<string[] | undefined> {
     debug(`Getting all configured profiles from config.`);
-    const config = await this._loadAsync<{ [key: string]: ProfileConfig }>("config");
+    const config = await this._loadAsync<{ [key: string]: ProfileConfig }>(
+      "config"
+    );
 
     if (!config) {
       debug(`Unable to find config in getAllProfileNames`);
       return;
     }
 
-    const profiles = Object.keys(config).map(function (e) {
+    const profiles = Object.keys(config).map(function(e) {
       return e.replace("profile ", "");
     });
     debug(`Received profiles: ${profiles.toString()}`);

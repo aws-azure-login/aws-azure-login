@@ -5,18 +5,18 @@ import zlib from "zlib";
 import AWS from "aws-sdk";
 import cheerio from "cheerio";
 import uuid from "uuid";
-import puppeteer from 'puppeteer';
-import querystring from 'querystring';
+import puppeteer from "puppeteer";
+import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
 import { awsConfig, ProfileConfig } from "./awsConfig";
-import proxy from 'proxy-agent';
-import https from 'https';
+import proxy from "proxy-agent";
+import https from "https";
 import { paths } from "./paths";
 import mkdirp from "mkdirp";
 import util from "util";
 
-const debug = _debug('aws-azure-login');
+const debug = _debug("aws-azure-login");
 
 const mkdirpPromise = util.promisify(mkdirp);
 
@@ -50,7 +50,7 @@ const states = [
       page: puppeteer.Page,
       _selected: puppeteer.ElementHandle,
       noPrompt: boolean,
-      defaultUsername: string,
+      defaultUsername: string
     ): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
@@ -66,11 +66,13 @@ const states = [
         username = defaultUsername;
       } else {
         debug("Prompting user for username");
-        ({ username } = await inquirer.prompt([{
-          name: "username",
-          message: "Username:",
-          default: defaultUsername
-        }]));
+        ({ username } = await inquirer.prompt([
+          {
+            name: "username",
+            message: "Username:",
+            default: defaultUsername
+          }
+        ]));
       }
 
       debug("Focusing on username input");
@@ -93,10 +95,16 @@ const states = [
 
       debug("Waiting for submission to finish");
       await Promise.race([
-        page.waitForSelector(`input[name=loginfmt].has-error,input[name=loginfmt].moveOffScreen`, { timeout: 60000 }),
+        page.waitForSelector(
+          `input[name=loginfmt].has-error,input[name=loginfmt].moveOffScreen`,
+          { timeout: 60000 }
+        ),
         (async (): Promise<void> => {
           await Bluebird.delay(1000);
-          await page.waitForSelector(`input[name=loginfmt]`, { hidden: true, timeout: 60000 });
+          await page.waitForSelector(`input[name=loginfmt]`, {
+            hidden: true,
+            timeout: 60000
+          });
         })()
       ]);
     }
@@ -107,12 +115,21 @@ const states = [
     async handler(page: puppeteer.Page): Promise<void> {
       debug("Multiple accounts associated with username.");
       const aadTile = await page.$("#aadTileTitle");
-      const aadTileMessage = await page.evaluate(aadTile => aadTile.textContent, aadTile);
+      const aadTileMessage = await page.evaluate(
+        aadTile => aadTile.textContent,
+        aadTile
+      );
 
       const msaTile = await page.$("#msaTileTitle");
-      const msaTileMessage = await page.evaluate(msaTile => msaTile.textContent, msaTile);
+      const msaTileMessage = await page.evaluate(
+        msaTile => msaTile.textContent,
+        msaTile
+      );
 
-      const accounts = [{ message: aadTileMessage, selector: "#aadTileTitle" }, { message: msaTileMessage, selector: "#msaTileTitle" }];
+      const accounts = [
+        { message: aadTileMessage, selector: "#aadTileTitle" },
+        { message: msaTileMessage, selector: "#msaTileTitle" }
+      ];
 
       let account;
       if (accounts.length === 0) {
@@ -121,14 +138,18 @@ const states = [
         account = accounts[0];
       } else {
         debug("Asking user to choose account");
-        console.log("It looks like this Username is used with more than one account from Microsoft. Which one do you want to use?");
-        const answers = await inquirer.prompt([{
-          name: "account",
-          message: "Account:",
-          type: "list",
-          choices: _.map(accounts, "message"),
-          default: aadTileMessage
-        }]);
+        console.log(
+          "It looks like this Username is used with more than one account from Microsoft. Which one do you want to use?"
+        );
+        const answers = await inquirer.prompt([
+          {
+            name: "account",
+            message: "Account:",
+            type: "list",
+            choices: _.map(accounts, "message"),
+            default: aadTileMessage
+          }
+        ]);
 
         account = _.find(accounts, ["message", answers.account]);
       }
@@ -157,7 +178,7 @@ const states = [
         debug("Found error message. Displaying");
         const errorMessage = await page.evaluate(err => err.textContent, error);
         console.log(errorMessage);
-        defaultPassword = ''; // Password error. Unset the default and allow user to enter it.
+        defaultPassword = ""; // Password error. Unset the default and allow user to enter it.
       }
 
       let password;
@@ -167,11 +188,13 @@ const states = [
         password = defaultPassword;
       } else {
         debug("Prompting user for password");
-        ({ password } = await inquirer.prompt([{
-          name: "password",
-          message: "Password:",
-          type: "password"
-        }]));
+        ({ password } = await inquirer.prompt([
+          {
+            name: "password",
+            message: "Password:",
+            type: "password"
+          }
+        ]));
       }
 
       debug("Focusing on password input");
@@ -188,26 +211,41 @@ const states = [
     }
   },
   {
-    name: 'TFA instructions',
+    name: "TFA instructions",
     selector: `#idDiv_SAOTCAS_Description`,
-    async handler(page: puppeteer.Page, selected: puppeteer.ElementHandle): Promise<void> {
-      const descriptionMessage = await page.evaluate(description => description.textContent, selected);
+    async handler(
+      page: puppeteer.Page,
+      selected: puppeteer.ElementHandle
+    ): Promise<void> {
+      const descriptionMessage = await page.evaluate(
+        description => description.textContent,
+        selected
+      );
       console.log(descriptionMessage);
 
       debug("Waiting for response");
-      await page.waitForSelector(`#idDiv_SAOTCAS_Description`, { hidden: true, timeout: 60000 });
+      await page.waitForSelector(`#idDiv_SAOTCAS_Description`, {
+        hidden: true,
+        timeout: 60000
+      });
     }
   },
   {
-    name: 'TFA failed',
+    name: "TFA failed",
     selector: `#idDiv_SAASDS_Description,#idDiv_SAASTO_Description`,
-    async handler(page: puppeteer.Page, selected: puppeteer.ElementHandle): Promise<void> {
-      const descriptionMessage = await page.evaluate(description => description.textContent, selected);
+    async handler(
+      page: puppeteer.Page,
+      selected: puppeteer.ElementHandle
+    ): Promise<void> {
+      const descriptionMessage = await page.evaluate(
+        description => description.textContent,
+        selected
+      );
       throw new CLIError(descriptionMessage);
     }
   },
   {
-    name: 'TFA code input',
+    name: "TFA code input",
     selector: "input[name=otc]:not(.moveOffScreen)",
     async handler(page: puppeteer.Page): Promise<void> {
       const error = await page.$(".alert-error");
@@ -217,14 +255,19 @@ const states = [
         console.log(errorMessage);
       } else {
         const description = await page.$("#idDiv_SAOTCC_Description");
-        const descriptionMessage = await page.evaluate(description => description.textContent, description);
+        const descriptionMessage = await page.evaluate(
+          description => description.textContent,
+          description
+        );
         console.log(descriptionMessage);
       }
 
-      const { verificationCode } = await inquirer.prompt([{
-        name: "verificationCode",
-        message: "Verification Code:"
-      }]);
+      const { verificationCode } = await inquirer.prompt([
+        {
+          name: "verificationCode",
+          message: "Verification Code:"
+        }
+      ]);
 
       debug("Focusing on verification code input");
       await page.focus(`input[name="otc"]`);
@@ -242,10 +285,16 @@ const states = [
 
       debug("Waiting for submission to finish");
       await Promise.race([
-        page.waitForSelector(`input[name=otc].has-error,input[name=otc].moveOffScreen`, { timeout: 60000 }),
+        page.waitForSelector(
+          `input[name=otc].has-error,input[name=otc].moveOffScreen`,
+          { timeout: 60000 }
+        ),
         (async (): Promise<void> => {
           await Bluebird.delay(1000);
-          await page.waitForSelector(`input[name=otc]`, { hidden: true, timeout: 60000 });
+          await page.waitForSelector(`input[name=otc]`, {
+            hidden: true,
+            timeout: 60000
+          });
         })()
       ]);
     }
@@ -276,8 +325,14 @@ const states = [
   {
     name: "Service exception",
     selector: "#service_exception_message",
-    async handler(page: puppeteer.Page, selected: puppeteer.ElementHandle): Promise<void> {
-      const descriptionMessage = await page.evaluate(description => description.textContent, selected);
+    async handler(
+      page: puppeteer.Page,
+      selected: puppeteer.ElementHandle
+    ): Promise<void> {
+      const descriptionMessage = await page.evaluate(
+        description => description.textContent,
+        selected
+      );
       throw new CLIError(descriptionMessage);
     }
   }
@@ -295,33 +350,60 @@ export const login = {
     noDisableExtensions: boolean
   ): Promise<void> {
     let headless, cliProxy;
-    if (mode === 'cli') {
+    if (mode === "cli") {
       headless = true;
       cliProxy = true;
-    } else if (mode === 'gui') {
+    } else if (mode === "gui") {
       headless = false;
       cliProxy = false;
-    } else if (mode === 'debug') {
+    } else if (mode === "debug") {
       headless = false;
       cliProxy = true;
     } else {
-      throw new CLIError('Invalid mode');
+      throw new CLIError("Invalid mode");
     }
 
     const profile = await this._loadProfileAsync(profileName);
     let assertionConsumerServiceURL = AWS_SAML_ENDPOINT;
-    if (profile.region && profile.region.startsWith('us-gov')) {
+    if (profile.region && profile.region.startsWith("us-gov")) {
       assertionConsumerServiceURL = AWS_GOV_SAML_ENDPOINT;
     }
 
-    console.log('Using AWS SAML endpoint', assertionConsumerServiceURL);
+    console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
 
-    const loginUrl = await this._createLoginUrlAsync(profile.azure_app_id_uri, profile.azure_tenant_id, assertionConsumerServiceURL);
-    const samlResponse = await this._performLoginAsync(loginUrl, headless, disableSandbox, cliProxy, noPrompt, enableChromeNetworkService, profile.azure_default_username,
-      profile.azure_default_password, enableChromeSeamlessSso, profile.azure_default_remember_me, noDisableExtensions);
+    const loginUrl = await this._createLoginUrlAsync(
+      profile.azure_app_id_uri,
+      profile.azure_tenant_id,
+      assertionConsumerServiceURL
+    );
+    const samlResponse = await this._performLoginAsync(
+      loginUrl,
+      headless,
+      disableSandbox,
+      cliProxy,
+      noPrompt,
+      enableChromeNetworkService,
+      profile.azure_default_username,
+      profile.azure_default_password,
+      enableChromeSeamlessSso,
+      profile.azure_default_remember_me,
+      noDisableExtensions
+    );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
-    const { role, durationHours } = await this._askUserForRoleAndDurationAsync(roles, noPrompt, profile.azure_default_role_arn, profile.azure_default_duration_hours);
-    await this._assumeRoleAsync(profileName, samlResponse, role, durationHours, awsNoVerifySsl, profile.region);
+    const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
+      roles,
+      noPrompt,
+      profile.azure_default_role_arn,
+      profile.azure_default_duration_hours
+    );
+    await this._assumeRoleAsync(
+      profileName,
+      samlResponse,
+      role,
+      durationHours,
+      awsNoVerifySsl,
+      profile.region
+    );
   },
 
   async loginAll(
@@ -342,13 +424,25 @@ export const login = {
 
     for (const profile of profiles) {
       debug(`Check if profile ${profile} is expired or is about to expire`);
-      if (!forceRefresh && !await awsConfig.isProfileAboutToExpireAsync(profile)) {
+      if (
+        !forceRefresh &&
+        !(await awsConfig.isProfileAboutToExpireAsync(profile))
+      ) {
         debug(`Profile ${profile} not yet due for refresh.`);
         continue;
       }
 
       debug(`Run login for profile: ${profile}`);
-      await this.loginAsync(profile, mode, disableSandbox, noPrompt, enableChromeNetworkService, awsNoVerifySsl, enableChromeSeamlessSso, noDisableExtensions);
+      await this.loginAsync(
+        profile,
+        mode,
+        disableSandbox,
+        noPrompt,
+        enableChromeNetworkService,
+        awsNoVerifySsl,
+        enableChromeSeamlessSso,
+        noDisableExtensions
+      );
     }
   },
 
@@ -356,12 +450,12 @@ export const login = {
   _loadProfileFromEnv(): { [key: string]: string } {
     const env: { [key: string]: string } = {};
     const options = [
-      'azure_tenant_id',
-      'azure_app_id_uri',
-      'azure_default_username',
-      'azure_default_password',
-      'azure_default_role_arn',
-      'azure_default_duration_hours'
+      "azure_tenant_id",
+      "azure_app_id_uri",
+      "azure_default_username",
+      "azure_default_password",
+      "azure_default_role_arn",
+      "azure_default_duration_hours"
     ];
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
@@ -374,10 +468,10 @@ export const login = {
         env[opt] = envVarUpperCase;
       }
     }
-    debug('Environment');
+    debug("Environment");
     debug({
       ...env,
-      azure_default_password: 'xxxxxxxxxx'
+      azure_default_password: "xxxxxxxxxx"
     });
     return env;
   },
@@ -385,7 +479,10 @@ export const login = {
   // Load the profile
   async _loadProfileAsync(profileName: string): Promise<ProfileConfig> {
     const profile = await awsConfig.getProfileConfigAsync(profileName);
-    if (!profile) throw new CLIError(`Unknown profile '${profileName}'. You must configure it first with --configure.`);
+    if (!profile)
+      throw new CLIError(
+        `Unknown profile '${profileName}'. You must configure it first with --configure.`
+      );
 
     const env = this._loadProfileFromEnv();
     for (const prop in env) {
@@ -394,21 +491,28 @@ export const login = {
       }
     }
 
-    if (!profile.azure_tenant_id || !profile.azure_app_id_uri) throw new CLIError(`Profile '${profileName}' is not configured properly.`);
+    if (!profile.azure_tenant_id || !profile.azure_app_id_uri)
+      throw new CLIError(
+        `Profile '${profileName}' is not configured properly.`
+      );
 
     console.log(`Logging in with profile '${profileName}'...`);
     return profile;
   },
 
   /**
-     * Create the Azure login SAML URL.
-     * @param {string} appIdUri - The app ID URI
-     * @param {string} tenantId - The Azure tenant ID
-     * @param {string} assertionConsumerServiceURL - The AWS SAML endpoint that Azure should send the SAML response to
-     * @returns {string} The login URL
-     * @private
-     */
-  _createLoginUrlAsync(appIdUri: string, tenantId: string, assertionConsumerServiceURL: string): Promise<string> {
+   * Create the Azure login SAML URL.
+   * @param {string} appIdUri - The app ID URI
+   * @param {string} tenantId - The Azure tenant ID
+   * @param {string} assertionConsumerServiceURL - The AWS SAML endpoint that Azure should send the SAML response to
+   * @returns {string} The login URL
+   * @private
+   */
+  _createLoginUrlAsync(
+    appIdUri: string,
+    tenantId: string,
+    assertionConsumerServiceURL: string
+  ): Promise<string> {
     debug("Generating UUID for SAML request");
     const id = uuid.v4();
 
@@ -429,9 +533,11 @@ export const login = {
         }
 
         debug("Encoding SAML in base64");
-        const samlBase64 = samlBuffer.toString('base64');
+        const samlBase64 = samlBuffer.toString("base64");
 
-        const url = `https://login.microsoftonline.com/${tenantId}/saml2?SAMLRequest=${encodeURIComponent(samlBase64)}`;
+        const url = `https://login.microsoftonline.com/${tenantId}/saml2?SAMLRequest=${encodeURIComponent(
+          samlBase64
+        )}`;
         debug("Created login URL", url);
 
         return resolve(url);
@@ -440,21 +546,21 @@ export const login = {
   },
 
   /**
-     * Perform the login using Chrome.
-     * @param {string} url - The login URL
-     * @param {boolean} headless - True to hide the GUI, false to show it.
-     * @param {boolean} disableSandbox - True to disable the Puppeteer sandbox.
-     * @param {boolean} cliProxy - True to proxy input/output through the CLI, false to leave it in the GUI
-     * @param {bool} [noPrompt] - Enable skipping of user prompting
-     * @param {bool} [enableChromeNetworkService] - Enable chrome network service.
-     * @param {string} [defaultUsername] - The default username
-     * @param {string} [defaultPassword] - The default password
-     * @param {bool} [enableChromeSeamlessSso] - chrome seamless SSO
-     * @param {bool} [rememberMe] - Enable remembering the session
-     * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
-     * @returns {Promise.<string>} The SAML response.
-     * @private
-     */
+   * Perform the login using Chrome.
+   * @param {string} url - The login URL
+   * @param {boolean} headless - True to hide the GUI, false to show it.
+   * @param {boolean} disableSandbox - True to disable the Puppeteer sandbox.
+   * @param {boolean} cliProxy - True to proxy input/output through the CLI, false to leave it in the GUI
+   * @param {bool} [noPrompt] - Enable skipping of user prompting
+   * @param {bool} [enableChromeNetworkService] - Enable chrome network service.
+   * @param {string} [defaultUsername] - The default username
+   * @param {string} [defaultPassword] - The default password
+   * @param {bool} [enableChromeSeamlessSso] - chrome seamless SSO
+   * @param {bool} [rememberMe] - Enable remembering the session
+   * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
+   * @returns {Promise.<string>} The SAML response.
+   * @private
+   */
   async _performLoginAsync(
     url: string,
     headless: boolean,
@@ -473,18 +579,24 @@ export const login = {
     let browser: puppeteer.Browser | undefined;
 
     try {
-      const args = headless ? [] : [`--app=${url}`, `--window-size=${WIDTH},${HEIGHT}`];
-      if (disableSandbox) args.push('--no-sandbox');
-      if (enableChromeNetworkService) args.push('--enable-features=NetworkService');
-      if (enableChromeSeamlessSso) args.push(
-        `--auth-server-whitelist=${AZURE_AD_SSO}`,
-        `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
-      );
+      const args = headless
+        ? []
+        : [`--app=${url}`, `--window-size=${WIDTH},${HEIGHT}`];
+      if (disableSandbox) args.push("--no-sandbox");
+      if (enableChromeNetworkService)
+        args.push("--enable-features=NetworkService");
+      if (enableChromeSeamlessSso)
+        args.push(
+          `--auth-server-whitelist=${AZURE_AD_SSO}`,
+          `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
+        );
       if (rememberMe) {
         await mkdirpPromise(paths.chromium);
         args.push(`--user-data-dir=${paths.chromium}`);
       }
-      const ignoreDefaultArgs = noDisableExtensions ? ['--disable-extensions'] : [];
+      const ignoreDefaultArgs = noDisableExtensions
+        ? ["--disable-extensions"]
+        : [];
 
       browser = await puppeteer.launch({
         headless,
@@ -502,7 +614,7 @@ export const login = {
       // Prevent redirection to AWS
       let samlResponseData;
       const samlResponsePromise = new Promise(resolve => {
-        page.on('request', req => {
+        page.on("request", req => {
           const url = req.url();
           debug(`Request: ${url}`);
           if (url === AWS_SAML_ENDPOINT || url === AWS_GOV_SAML_ENDPOINT) {
@@ -510,8 +622,8 @@ export const login = {
             samlResponseData = req.postData();
             req.respond({
               status: 200,
-              contentType: 'text/plain',
-              body: ''
+              contentType: "text/plain",
+              body: ""
             });
             if (browser) {
               browser.close();
@@ -528,12 +640,12 @@ export const login = {
       await page.setRequestInterception(true);
 
       try {
-        if ((headless) || (!headless && cliProxy)) {
+        if (headless || (!headless && cliProxy)) {
           debug("Going to login page");
-          await page.goto(url, { waitUntil: 'domcontentloaded' });
+          await page.goto(url, { waitUntil: "domcontentloaded" });
         } else {
           debug("Waiting for login page to load");
-          await page.waitForNavigation({ waitUntil: 'networkidle0' });
+          await page.waitForNavigation({ waitUntil: "networkidle0" });
         }
       } catch (err) {
         // An error will be thrown if you're still logged in cause the page.goto ot waitForNavigation
@@ -555,13 +667,17 @@ export const login = {
             try {
               selected = await page.$(state.selector);
             } catch (err) {
-              debug(`Error when running state "${state.name}". ${err.toString()}`);
+              debug(
+                `Error when running state "${state.name}". ${err.toString()}`
+              );
               debug("Retrying...");
 
               // An error can be thrown if the page isn't in a good state.
               // If one occurs, try again after another loop.
 
-              debug(`Error when running state "${state.name}". ${err.toString()}`);
+              debug(
+                `Error when running state "${state.name}". ${err.toString()}`
+              );
               debug("Retrying...");
 
               break;
@@ -573,7 +689,14 @@ export const login = {
 
               await Promise.race([
                 samlResponsePromise,
-                state.handler(page, selected, noPrompt, defaultUsername, defaultPassword, rememberMe)
+                state.handler(
+                  page,
+                  selected,
+                  noPrompt,
+                  defaultUsername,
+                  defaultPassword,
+                  rememberMe
+                )
               ]);
 
               debug(`Finished state: ${state.name}`);
@@ -587,9 +710,11 @@ export const login = {
           } else {
             debug("State not recognized!");
             if (totalUnrecognizedDelay > MAX_UNRECOGNIZED_PAGE_DELAY) {
-              const path = 'aws-azure-login-unrecognized-state.png';
+              const path = "aws-azure-login-unrecognized-state.png";
               await page.screenshot({ path });
-              throw new CLIError(`Unable to recognize page state! A screenshot has been dumped to ${path}. If this problem persists, try running with --mode=gui or --mode=debug`);
+              throw new CLIError(
+                `Unable to recognize page state! A screenshot has been dumped to ${path}. If this problem persists, try running with --mode=gui or --mode=debug`
+              );
             }
 
             totalUnrecognizedDelay += DELAY_ON_UNRECOGNIZED_PAGE;
@@ -621,45 +746,51 @@ export const login = {
   },
 
   /**
-     * Parse AWS roles out of the SAML response
-     * @param {string} assertion - The SAML assertion
-     * @returns {Array.<{roleArn: string, principalArn: string}>} The roles
-     * @private
-     */
+   * Parse AWS roles out of the SAML response
+   * @param {string} assertion - The SAML assertion
+   * @returns {Array.<{roleArn: string, principalArn: string}>} The roles
+   * @private
+   */
   _parseRolesFromSamlResponse(assertion: string): Role[] {
     debug("Converting assertion from base64 to ASCII");
-    const samlText = Buffer.from(assertion, 'base64').toString("ascii");
+    const samlText = Buffer.from(assertion, "base64").toString("ascii");
     debug("Converted", samlText);
 
     debug("Parsing SAML XML");
     const saml = cheerio.load(samlText, { xmlMode: true });
 
     debug("Looking for role SAML attribute");
-    const roles = saml("Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue").map(function () {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-      // @ts-ignore
-      const roleAndPrincipal = saml(this).text();
-      const parts = roleAndPrincipal.split(",");
+    const roles = saml(
+      "Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue"
+    )
+      .map(function() {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        const roleAndPrincipal = saml(this).text();
+        const parts = roleAndPrincipal.split(",");
 
-      // Role / Principal claims may be in either order
-      const [roleIdx, principalIdx] = parts[0].includes(":role/") ? [0, 1] : [1, 0];
-      const roleArn = parts[roleIdx].trim();
-      const principalArn = parts[principalIdx].trim();
-      return { roleArn, principalArn };
-    }).get();
+        // Role / Principal claims may be in either order
+        const [roleIdx, principalIdx] = parts[0].includes(":role/")
+          ? [0, 1]
+          : [1, 0];
+        const roleArn = parts[roleIdx].trim();
+        const principalArn = parts[principalIdx].trim();
+        return { roleArn, principalArn };
+      })
+      .get();
     debug("Found roles", roles);
     return roles;
   },
 
   /**
-     * Ask the user for the role they want to use.
-     * @param {Array.<{roleArn: string, principalArn: string}>} roles - The roles to pick from
-     * @param {bool} [noPrompt] - Enable skipping of user prompting
-     * @param {string} [defaultRoleArn] - The default role ARN
-     * @param {number} [defaultDurationHours] - The default session duration in hours
-     * @returns {Promise.<{role: string, durationHours: number}>} The selected role and duration
-     * @private
-     */
+   * Ask the user for the role they want to use.
+   * @param {Array.<{roleArn: string, principalArn: string}>} roles - The roles to pick from
+   * @param {bool} [noPrompt] - Enable skipping of user prompting
+   * @param {string} [defaultRoleArn] - The default role ARN
+   * @param {number} [defaultDurationHours] - The default session duration in hours
+   * @returns {Promise.<{role: string, durationHours: number}>} The selected role and duration
+   * @private
+   */
   async _askUserForRoleAndDurationAsync(
     roles: Role[],
     noPrompt: boolean,
@@ -708,7 +839,7 @@ export const login = {
         validate: (input): boolean | string => {
           input = Number(input);
           if (input > 0 && input <= 12) return true;
-          return 'Duration hours must be between 0 and 12';
+          return "Duration hours must be between 0 and 12";
         }
       });
     }
@@ -729,16 +860,16 @@ export const login = {
   },
 
   /**
-     * Assume the role.
-     * @param {string} profileName - The profile name
-     * @param {string} assertion - The SAML assertion
-     * @param {string} role - The role to assume
-     * @param {number} durationHours - The session duration in hours
-     * @param {bool} awsNoVerifySsl - Whether to have the AWS CLI verify SSL
-     * @param {string} region - AWS region, if specified
-     * @returns {Promise} A promise
-     * @private
-     */
+   * Assume the role.
+   * @param {string} profileName - The profile name
+   * @param {string} assertion - The SAML assertion
+   * @param {string} role - The role to assume
+   * @param {number} durationHours - The session duration in hours
+   * @param {bool} awsNoVerifySsl - Whether to have the AWS CLI verify SSL
+   * @param {string} region - AWS region, if specified
+   * @returns {Promise} A promise
+   * @private
+   */
   async _assumeRoleAsync(
     profileName: string,
     assertion: string,
@@ -773,12 +904,14 @@ export const login = {
     }
 
     const sts = new AWS.STS();
-    const res = await sts.assumeRoleWithSAML({
-      PrincipalArn: role.principalArn,
-      RoleArn: role.roleArn,
-      SAMLAssertion: assertion,
-      DurationSeconds: Math.round(durationHours * 60 * 60)
-    }).promise();
+    const res = await sts
+      .assumeRoleWithSAML({
+        PrincipalArn: role.principalArn,
+        RoleArn: role.roleArn,
+        SAMLAssertion: assertion,
+        DurationSeconds: Math.round(durationHours * 60 * 60)
+      })
+      .promise();
 
     if (!res.Credentials) {
       debug("Unable to get security credentials from AWS");
