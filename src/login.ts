@@ -258,7 +258,7 @@ const states = [
       _selected: puppeteer.ElementHandle,
       _noPrompt: boolean,
       _defaultUsername: string,
-      _defaultPassword: string,
+      _defaultPassword: string | undefined,
       rememberMe: boolean
     ): Promise<void> {
       if (rememberMe) {
@@ -318,7 +318,7 @@ export const login = {
 
     const loginUrl = await this._createLoginUrlAsync(profile.azure_app_id_uri, profile.azure_tenant_id, assertionConsumerServiceURL);
     const samlResponse = await this._performLoginAsync(loginUrl, headless, disableSandbox, cliProxy, noPrompt, enableChromeNetworkService, profile.azure_default_username,
-      profile.azure_default_password, enableChromeSeamlessSso, profile.azure_default_remember_me === "true", noDisableExtensions);
+      profile.azure_default_password, enableChromeSeamlessSso, profile.azure_default_remember_me, noDisableExtensions);
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(roles, noPrompt, profile.azure_default_role_arn, profile.azure_default_duration_hours);
     await this._assumeRoleAsync(profileName, samlResponse, role, durationHours, awsNoVerifySsl, profile.region);
@@ -463,7 +463,7 @@ export const login = {
     noPrompt: boolean,
     enableChromeNetworkService: boolean,
     defaultUsername: string,
-    defaultPassword: string,
+    defaultPassword: string | undefined,
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
     noDisableExtensions: boolean
@@ -745,7 +745,7 @@ export const login = {
     role: Role,
     durationHours: number,
     awsNoVerifySsl: boolean,
-    region: string
+    region: string | undefined
   ): Promise<void> {
     console.log(`Assuming role ${role.roleArn}`);
     if (process.env.https_proxy) {

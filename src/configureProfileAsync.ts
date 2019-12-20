@@ -48,7 +48,7 @@ export async function configureProfileAsync(profileName: string): Promise<void> 
     azure_default_username: answers.username,
     azure_default_role_arn: answers.defaultRoleArn,
     azure_default_duration_hours: answers.defaultDurationHours,
-    azure_default_remember_me: answers.rememberMe
+    azure_default_remember_me: answers.rememberMe,
   });
 
   console.log('Profile saved.');
