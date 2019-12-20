@@ -43,14 +43,8 @@ export const awsConfig = {
     debug(
       `Setting config for profile '${profileName}' in section '${sectionName}'`
     );
-    const config = await this._loadAsync<{ [key: string]: ProfileConfig }>(
-      "config"
-    );
-
-    if (!config) {
-      debug(`Unable to find config in setProfileConfigValuesAsync`);
-      return;
-    }
+    const config =
+      (await this._loadAsync<{ [key: string]: ProfileConfig }>("config")) || {};
 
     config[sectionName] = {
       ...config[sectionName],
@@ -73,8 +67,7 @@ export const awsConfig = {
     );
 
     if (!config) {
-      debug(`Unable to find config in getProfileConfigAsync`);
-      return;
+      return undefined;
     }
 
     return config[sectionName];
@@ -110,14 +103,10 @@ export const awsConfig = {
     profileName: string,
     values: ProfileCredentials
   ): Promise<void> {
-    const credentials = await this._loadAsync<{
-      [key: string]: ProfileCredentials;
-    }>("credentials");
-
-    if (!credentials) {
-      debug(`Unable to find credentials in setProfileCredentialsAsync`);
-      return;
-    }
+    const credentials =
+      (await this._loadAsync<{
+        [key: string]: ProfileCredentials;
+      }>("credentials")) || {};
 
     debug(`Setting credentials for profile '${profileName}'`);
     credentials[profileName] = values;
@@ -126,14 +115,8 @@ export const awsConfig = {
 
   async getAllProfileNames(): Promise<string[] | undefined> {
     debug(`Getting all configured profiles from config.`);
-    const config = await this._loadAsync<{ [key: string]: ProfileConfig }>(
-      "config"
-    );
-
-    if (!config) {
-      debug(`Unable to find config in getAllProfileNames`);
-      return;
-    }
+    const config =
+      (await this._loadAsync<{ [key: string]: ProfileConfig }>("config")) || {};
 
     const profiles = Object.keys(config).map(function(e) {
       return e.replace("profile ", "");
