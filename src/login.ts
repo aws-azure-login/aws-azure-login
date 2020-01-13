@@ -810,7 +810,13 @@ export const login = {
       role = roles[0];
     } else {
       if (noPrompt && defaultRoleArn) {
-        role = _.find(roles, ["roleArn", defaultRoleArn]);
+        if (defaultRoleArn.indexOf('arn:') === -1) {
+          role = _.find(roles, function(r: Role): boolean { 
+            return r.roleArn.endsWith('role/' + defaultRoleArn);
+          });
+        } else {
+          role = _.find(roles, ["roleArn", defaultRoleArn]);
+        }      
       }
 
       if (role) {
