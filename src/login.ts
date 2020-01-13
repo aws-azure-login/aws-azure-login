@@ -810,7 +810,7 @@ export const login = {
       role = roles[0];
     } else {
       if (noPrompt && defaultRoleArn) {
-        if (defaultRoleArn.indexOf('arn:') === -1) {
+        if (!defaultRoleArn.startsWith('arn:')) {
           role = _.find(roles, function(r: Role): boolean { 
             return r.roleArn.endsWith('role/' + defaultRoleArn);
           });
