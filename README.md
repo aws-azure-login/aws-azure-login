@@ -146,7 +146,7 @@ If behind corporate proxy, then just set https_proxy env variable.
 
 ### Using Keyring to save and retrieve password
 
-Using Keyring can be better alternative then typing password or using enviorment variable. the service / name name would be aws-azure-login and account would be the signin email address.
+Using Keyring can be better alternative compared to typing password or using enviorment variable. The service / key name name would be aws-azure-login and account would be the signin email address.
 
     aws-azure-login -a --no-prompt -k
 
