@@ -144,6 +144,12 @@ _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome
 
 If behind corporate proxy, then just set https_proxy env variable.
 
+### Using Keyring to save and retrieve password
+
+Using Keyring can be better alternative then typing password or using enviorment variable. the service / name name would be aws-azure-login and account would be the signin email address.
+
+    aws-azure-login -a --no-prompt -k
+
 ## Automation
 
 ### Renew credentials for all configured profiles
