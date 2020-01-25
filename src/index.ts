@@ -20,7 +20,7 @@ commander
   .option("-c, --configure", "Configure the profile")
 
   .option("-k, --keyring", "Use Keyring to get credentials")
-  
+
   .option(
     "-m, --mode <mode>",
     "'cli' to hide the login page and perform the login through the CLI (default behavior), 'gui' to perform the login through the Azure GUI (more reliable but only works on GUI operating system), 'debug' to show the login page but perform the login through the CLI (useful to debug issues with the CLI login)"
