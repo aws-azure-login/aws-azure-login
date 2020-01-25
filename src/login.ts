@@ -15,8 +15,13 @@ import https from "https";
 import { paths } from "./paths";
 import mkdirp from "mkdirp";
 import util from "util";
+ 
 
 const debug = _debug("aws-azure-login");
+const keytar = require('keytar');
+
+const keytarService = 'aws-azure-login';
+
 
 const mkdirpPromise = util.promisify(mkdirp);
 
@@ -171,7 +176,9 @@ const states = [
       _selected: puppeteer.ElementHandle,
       noPrompt: boolean,
       _defaultUsername: string,
-      defaultPassword: string
+      defaultPassword: string| undefined,
+      save2Keyring:boolean,
+      rememberMe: boolean
     ): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
@@ -181,7 +188,7 @@ const states = [
         defaultPassword = ""; // Password error. Unset the default and allow user to enter it.
       }
 
-      let password;
+      let password: string ;
 
       if (noPrompt && defaultPassword) {
         debug("Not prompting user for password");
@@ -195,6 +202,7 @@ const states = [
             type: "password"
           }
         ]));
+        keytar.setPassword(keytarService, _defaultUsername,password);
       }
 
       debug("Focusing on password input");
@@ -308,7 +316,7 @@ const states = [
       _noPrompt: boolean,
       _defaultUsername: string,
       _defaultPassword: string | undefined,
-      rememberMe: boolean
+      rememberMe: boolean,
     ): Promise<void> {
       if (rememberMe) {
         debug("Clicking remember me button");
@@ -342,6 +350,7 @@ export const login = {
   async loginAsync(
     profileName: string,
     mode: string,
+    keyring:boolean,
     disableSandbox: boolean,
     noPrompt: boolean,
     enableChromeNetworkService: boolean,
@@ -369,6 +378,14 @@ export const login = {
       assertionConsumerServiceURL = AWS_GOV_SAML_ENDPOINT;
     }
 
+    if(keyring){
+      const keyringPass = await keytar.getPassword(keytarService, profile.azure_default_username);
+      if(keyringPass){
+      profile.azure_default_password = keyringPass;
+      console.log("Retrieved Password from Keyring");
+      }
+    }
+
     console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
 
     const loginUrl = await this._createLoginUrlAsync(
@@ -387,7 +404,8 @@ export const login = {
       profile.azure_default_password,
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
-      noDisableExtensions
+      noDisableExtensions,
+      keyring
     );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
@@ -408,6 +426,7 @@ export const login = {
 
   async loginAll(
     mode: string,
+    keyring:boolean,
     disableSandbox: boolean,
     noPrompt: boolean,
     enableChromeNetworkService: boolean,
@@ -436,6 +455,7 @@ export const login = {
       await this.loginAsync(
         profile,
         mode,
+        keyring,
         disableSandbox,
         noPrompt,
         enableChromeNetworkService,
@@ -474,6 +494,32 @@ export const login = {
       azure_default_password: "xxxxxxxxxx"
     });
     return env;
+  },
+
+  /**
+     * Gather proxy information from environment variables
+     * @returns {string} value of environment variable
+     * @private
+     */
+    _loadProxyFromEnv() {
+      var variables = [
+          'http_proxy',
+          'https_proxy',
+      ];
+      var proxy = null;
+      for (var i = 0; i < variables.length; i++) {
+          var opt = variables[i];
+          if (process.env[opt]) {
+              proxy = process.env[opt];
+              break;
+          } else if (process.env[opt.toUpperCase()]) {
+              proxy = process.env[opt.toUpperCase()];
+              break;
+          }
+      }
+      debug("Proxy");
+      debug ({proxy});
+      return proxy;
   },
 
   // Load the profile
@@ -572,7 +618,8 @@ export const login = {
     defaultPassword: string | undefined,
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
-    noDisableExtensions: boolean
+    noDisableExtensions: boolean,
+    save2Keyring:boolean
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
@@ -597,6 +644,8 @@ export const login = {
       const ignoreDefaultArgs = noDisableExtensions
         ? ["--disable-extensions"]
         : [];
+      const proxy = this._loadProxyFromEnv();
+        if (proxy !== null) args.push(`--proxy-server=${proxy}`);
 
       browser = await puppeteer.launch({
         headless,
@@ -695,6 +744,7 @@ export const login = {
                   noPrompt,
                   defaultUsername,
                   defaultPassword,
+                  save2Keyring,
                   rememberMe
                 )
               ]);
@@ -810,7 +860,13 @@ export const login = {
       role = roles[0];
     } else {
       if (noPrompt && defaultRoleArn) {
-        role = _.find(roles, ["roleArn", defaultRoleArn]);
+        if (!defaultRoleArn.startsWith("arn:")) {
+          role = _.find(roles, (r: Role): boolean =>
+            r.roleArn.endsWith("role/" + defaultRoleArn)
+          );
+        } else {
+          role = _.find(roles, ["roleArn", defaultRoleArn]);
+        }
       }
 
       if (role) {

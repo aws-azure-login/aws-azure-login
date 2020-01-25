@@ -18,6 +18,9 @@ commander
     "Force a credential refresh, even if they are still valid"
   )
   .option("-c, --configure", "Configure the profile")
+
+  .option("-k, --keyring", "Use Keyring to get credentials")
+  
   .option(
     "-m, --mode <mode>",
     "'cli' to hide the login page and perform the login through the CLI (default behavior), 'gui' to perform the login through the Azure GUI (more reliable but only works on GUI operating system), 'debug' to show the login page but perform the login through the CLI (useful to debug issues with the CLI login)"
@@ -50,6 +53,7 @@ commander
   .parse(process.argv);
 
 const profileName = commander.profile || process.env.AWS_PROFILE || "default";
+const useKeyring = commander.keyring;
 const mode = commander.mode || "cli";
 const disableSandbox = !commander.sandbox;
 const noPrompt = !commander.prompt;
@@ -64,6 +68,7 @@ Promise.resolve()
     if (commander.allProfiles) {
       return login.loginAll(
         mode,
+        useKeyring,
         disableSandbox,
         noPrompt,
         enableChromeNetworkService,
@@ -78,6 +83,7 @@ Promise.resolve()
     return login.loginAsync(
       profileName,
       mode,
+      useKeyring,
       disableSandbox,
       noPrompt,
       enableChromeNetworkService,
