@@ -28,6 +28,7 @@ const MAX_UNRECOGNIZED_PAGE_DELAY = 30 * 1000;
 // source: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sso-quick-start#google-chrome-all-platforms
 const AZURE_AD_SSO = "autologon.microsoftazuread-sso.com";
 const AWS_SAML_ENDPOINT = "https://signin.aws.amazon.com/saml";
+const AWS_CN_SAML_ENDPOINT = "https://signin.amazonaws.cn/saml";
 const AWS_GOV_SAML_ENDPOINT = "https://signin.amazonaws-us-gov.com/saml";
 
 interface Role {
@@ -368,6 +369,9 @@ export const login = {
     if (profile.region && profile.region.startsWith("us-gov")) {
       assertionConsumerServiceURL = AWS_GOV_SAML_ENDPOINT;
     }
+    if (profile.region && profile.region.startsWith("cn-")) {
+      assertionConsumerServiceURL = AWS_CN_SAML_ENDPOINT;
+    }
 
     console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
 
@@ -617,7 +621,11 @@ export const login = {
         page.on("request", req => {
           const url = req.url();
           debug(`Request: ${url}`);
-          if (url === AWS_SAML_ENDPOINT || url === AWS_GOV_SAML_ENDPOINT) {
+          if (
+            url === AWS_SAML_ENDPOINT ||
+            url === AWS_GOV_SAML_ENDPOINT ||
+            url === AWS_CN_SAML_ENDPOINT
+          ) {
             resolve();
             samlResponseData = req.postData();
             req.respond({
