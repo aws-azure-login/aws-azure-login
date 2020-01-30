@@ -621,7 +621,11 @@ export const login = {
         page.on("request", req => {
           const url = req.url();
           debug(`Request: ${url}`);
-          if (url === AWS_SAML_ENDPOINT || url === AWS_GOV_SAML_ENDPOINT || url === AWS_CN_SAML_ENDPOINT) {
+          if (
+            url === AWS_SAML_ENDPOINT ||
+            url === AWS_GOV_SAML_ENDPOINT ||
+            url === AWS_CN_SAML_ENDPOINT
+          ) {
             resolve();
             samlResponseData = req.postData();
             req.respond({
