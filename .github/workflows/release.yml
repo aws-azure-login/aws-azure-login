@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   build:
@@ -15,12 +15,20 @@ jobs:
           node-version: 8
       - run: npm ci
       - run: npm test
+      - run: npm run build
+      - uses: actions/upload-artifact@v1
+        with:
+          name: lib
+          path: lib
 
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/download-artifact@v1
+        with:
+          name: lib
       - uses: actions/setup-node@v1
         with:
           node-version: 8
@@ -34,6 +42,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/download-artifact@v1
+        with:
+          name: lib
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
         with:
@@ -49,6 +60,9 @@ jobs:
       image: snapcore/snapcraft
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/download-artifact@v1
+        with:
+          name: lib
       - name: Publish to Snap Store
         run: |
           echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode > snapcraft-login
