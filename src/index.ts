@@ -86,7 +86,7 @@ Promise.resolve()
       noDisableExtensions
     );
   })
-  .catch(err => {
+  .catch((err) => {
     if (err.name === "CLIError") {
       console.error(err.message);
       process.exit(2);

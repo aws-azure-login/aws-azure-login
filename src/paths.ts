@@ -14,5 +14,5 @@ export const paths: {
   config: process.env.AWS_CONFIG_FILE || path.join(awsDir, "config"),
   credentials:
     process.env.AWS_SHARED_CREDENTIALS_FILE || path.join(awsDir, "credentials"),
-  chromium: path.join(awsDir, "chromium")
+  chromium: path.join(awsDir, "chromium"),
 };
