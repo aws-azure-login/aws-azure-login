@@ -9,7 +9,6 @@ const debug = _debug("aws-azure-login");
 
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
-const mkdirpPromise = util.promisify(mkdirp);
 
 // Autorefresh credential time limit in milliseconds
 const refreshLimitInMs = 11 * 60 * 1000;
@@ -48,7 +47,7 @@ export const awsConfig = {
 
     config[sectionName] = {
       ...config[sectionName],
-      ...values
+      ...values,
     };
 
     await this._saveAsync("config", config);
@@ -93,8 +92,9 @@ export const awsConfig = {
 
     const timeDifference = expirationDate.getTime() - new Date().getTime();
     debug(
-      `Remaining time till credential expiration: ${timeDifference /
-        1000}s, refresh due if time lower than: ${refreshLimitInMs / 1000}s`
+      `Remaining time till credential expiration: ${
+        timeDifference / 1000
+      }s, refresh due if time lower than: ${refreshLimitInMs / 1000}s`
     );
     return timeDifference < refreshLimitInMs;
   },
@@ -118,7 +118,7 @@ export const awsConfig = {
     const config =
       (await this._loadAsync<{ [key: string]: ProfileConfig }>("config")) || {};
 
-    const profiles = Object.keys(config).map(function(e) {
+    const profiles = Object.keys(config).map(function (e) {
       return e.replace("profile ", "");
     });
     debug(`Received profiles: ${profiles.toString()}`);
@@ -156,9 +156,9 @@ export const awsConfig = {
     const text = ini.stringify(data);
 
     debug(`Creating AWS config directory '${paths.awsDir}' if not exists.`);
-    await mkdirpPromise(paths.awsDir);
+    await mkdirp(paths.awsDir);
 
     debug(`Writing '${type}' INI to file '${paths[type]}'`);
     await writeFile(paths[type], text);
-  }
+  },
 };

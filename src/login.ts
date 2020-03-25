@@ -14,11 +14,8 @@ import proxy from "proxy-agent";
 import https from "https";
 import { paths } from "./paths";
 import mkdirp from "mkdirp";
-import util from "util";
 
 const debug = _debug("aws-azure-login");
-
-const mkdirpPromise = util.promisify(mkdirp);
 
 const WIDTH = 425;
 const HEIGHT = 550;
@@ -56,7 +53,10 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        const errorMessage = await page.evaluate(err => err.textContent, error);
+        const errorMessage = await page.evaluate(
+          (err) => err.textContent,
+          error
+        );
         console.log(errorMessage);
       }
 
@@ -71,8 +71,8 @@ const states = [
           {
             name: "username",
             message: "Username:",
-            default: defaultUsername
-          }
+            default: defaultUsername,
+          },
         ]));
       }
 
@@ -104,11 +104,11 @@ const states = [
           await Bluebird.delay(1000);
           await page.waitForSelector(`input[name=loginfmt]`, {
             hidden: true,
-            timeout: 60000
+            timeout: 60000,
           });
-        })()
+        })(),
       ]);
-    }
+    },
   },
   {
     name: "account selection",
@@ -117,19 +117,19 @@ const states = [
       debug("Multiple accounts associated with username.");
       const aadTile = await page.$("#aadTileTitle");
       const aadTileMessage = await page.evaluate(
-        aadTile => aadTile.textContent,
+        (aadTile) => aadTile.textContent,
         aadTile
       );
 
       const msaTile = await page.$("#msaTileTitle");
       const msaTileMessage = await page.evaluate(
-        msaTile => msaTile.textContent,
+        (msaTile) => msaTile.textContent,
         msaTile
       );
 
       const accounts = [
         { message: aadTileMessage, selector: "#aadTileTitle" },
-        { message: msaTileMessage, selector: "#msaTileTitle" }
+        { message: msaTileMessage, selector: "#msaTileTitle" },
       ];
 
       let account;
@@ -148,8 +148,8 @@ const states = [
             message: "Account:",
             type: "list",
             choices: _.map(accounts, "message"),
-            default: aadTileMessage
-          }
+            default: aadTileMessage,
+          },
         ]);
 
         account = _.find(accounts, ["message", answers.account]);
@@ -162,7 +162,7 @@ const states = [
       debug(`Proceeding with account ${account.selector}`);
       await page.click(account.selector);
       await Bluebird.delay(500);
-    }
+    },
   },
   {
     name: "password input",
@@ -177,7 +177,10 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        const errorMessage = await page.evaluate(err => err.textContent, error);
+        const errorMessage = await page.evaluate(
+          (err) => err.textContent,
+          error
+        );
         console.log(errorMessage);
         defaultPassword = ""; // Password error. Unset the default and allow user to enter it.
       }
@@ -193,8 +196,8 @@ const states = [
           {
             name: "password",
             message: "Password:",
-            type: "password"
-          }
+            type: "password",
+          },
         ]));
       }
 
@@ -209,7 +212,7 @@ const states = [
 
       debug("Waiting for a delay");
       await Bluebird.delay(500);
-    }
+    },
   },
   {
     name: "TFA instructions",
@@ -219,7 +222,7 @@ const states = [
       selected: puppeteer.ElementHandle
     ): Promise<void> {
       const descriptionMessage = await page.evaluate(
-        description => description.textContent,
+        (description) => description.textContent,
         selected
       );
       console.log(descriptionMessage);
@@ -227,9 +230,9 @@ const states = [
       debug("Waiting for response");
       await page.waitForSelector(`#idDiv_SAOTCAS_Description`, {
         hidden: true,
-        timeout: 60000
+        timeout: 60000,
       });
-    }
+    },
   },
   {
     name: "TFA failed",
@@ -239,11 +242,11 @@ const states = [
       selected: puppeteer.ElementHandle
     ): Promise<void> {
       const descriptionMessage = await page.evaluate(
-        description => description.textContent,
+        (description) => description.textContent,
         selected
       );
       throw new CLIError(descriptionMessage);
-    }
+    },
   },
   {
     name: "TFA code input",
@@ -252,12 +255,15 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        const errorMessage = await page.evaluate(err => err.textContent, error);
+        const errorMessage = await page.evaluate(
+          (err) => err.textContent,
+          error
+        );
         console.log(errorMessage);
       } else {
         const description = await page.$("#idDiv_SAOTCC_Description");
         const descriptionMessage = await page.evaluate(
-          description => description.textContent,
+          (description) => description.textContent,
           description
         );
         console.log(descriptionMessage);
@@ -266,8 +272,8 @@ const states = [
       const { verificationCode } = await inquirer.prompt([
         {
           name: "verificationCode",
-          message: "Verification Code:"
-        }
+          message: "Verification Code:",
+        },
       ]);
 
       debug("Focusing on verification code input");
@@ -294,11 +300,11 @@ const states = [
           await Bluebird.delay(1000);
           await page.waitForSelector(`input[name=otc]`, {
             hidden: true,
-            timeout: 60000
+            timeout: 60000,
           });
-        })()
+        })(),
       ]);
-    }
+    },
   },
   {
     name: "Remember me",
@@ -321,7 +327,7 @@ const states = [
 
       debug("Waiting for a delay");
       await Bluebird.delay(500);
-    }
+    },
   },
   {
     name: "Service exception",
@@ -331,12 +337,12 @@ const states = [
       selected: puppeteer.ElementHandle
     ): Promise<void> {
       const descriptionMessage = await page.evaluate(
-        description => description.textContent,
+        (description) => description.textContent,
         selected
       );
       throw new CLIError(descriptionMessage);
-    }
-  }
+    },
+  },
 ];
 
 export const login = {
@@ -459,7 +465,7 @@ export const login = {
       "azure_default_username",
       "azure_default_password",
       "azure_default_role_arn",
-      "azure_default_duration_hours"
+      "azure_default_duration_hours",
     ];
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
@@ -475,7 +481,7 @@ export const login = {
     debug("Environment");
     debug({
       ...env,
-      azure_default_password: "xxxxxxxxxx"
+      azure_default_password: "xxxxxxxxxx",
     });
     return env;
   },
@@ -595,7 +601,7 @@ export const login = {
           `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
         );
       if (rememberMe) {
-        await mkdirpPromise(paths.chromium);
+        await mkdirp(paths.chromium);
         args.push(`--user-data-dir=${paths.chromium}`);
       }
       const ignoreDefaultArgs = noDisableExtensions
@@ -605,7 +611,7 @@ export const login = {
       browser = await puppeteer.launch({
         headless,
         args,
-        ignoreDefaultArgs
+        ignoreDefaultArgs,
       });
 
       // Wait for a bit as sometimes the browser isn't ready.
@@ -617,8 +623,8 @@ export const login = {
 
       // Prevent redirection to AWS
       let samlResponseData;
-      const samlResponsePromise = new Promise(resolve => {
-        page.on("request", req => {
+      const samlResponsePromise = new Promise((resolve) => {
+        page.on("request", (req) => {
           const url = req.url();
           debug(`Request: ${url}`);
           if (
@@ -631,7 +637,7 @@ export const login = {
             req.respond({
               status: 200,
               contentType: "text/plain",
-              body: ""
+              body: "",
             });
             if (browser) {
               browser.close();
@@ -704,7 +710,7 @@ export const login = {
                   defaultUsername,
                   defaultPassword,
                   rememberMe
-                )
+                ),
               ]);
 
               debug(`Finished state: ${state.name}`);
@@ -771,7 +777,7 @@ export const login = {
     const roles = saml(
       "Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue"
     )
-      .map(function() {
+      .map(function () {
         // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
         // @ts-ignore
         const roleAndPrincipal = saml(this).text();
@@ -830,7 +836,7 @@ export const login = {
           message: "Role:",
           type: "list",
           choices: _.sortBy(_.map(roles, "roleArn")),
-          default: defaultRoleArn
+          default: defaultRoleArn,
         });
       }
     }
@@ -848,7 +854,7 @@ export const login = {
           input = Number(input);
           if (input > 0 && input <= 12) return true;
           return "Duration hours must be between 0 and 12";
-        }
+        },
       });
     }
 
@@ -890,8 +896,8 @@ export const login = {
     if (process.env.https_proxy) {
       AWS.config.update({
         httpOptions: {
-          agent: proxy(process.env.https_proxy)
-        }
+          agent: proxy(process.env.https_proxy),
+        },
       });
     }
 
@@ -899,15 +905,15 @@ export const login = {
       AWS.config.update({
         httpOptions: {
           agent: new https.Agent({
-            rejectUnauthorized: false
-          })
-        }
+            rejectUnauthorized: false,
+          }),
+        },
       });
     }
 
     if (region) {
       AWS.config.update({
-        region
+        region,
       });
     }
 
@@ -917,7 +923,7 @@ export const login = {
         PrincipalArn: role.principalArn,
         RoleArn: role.roleArn,
         SAMLAssertion: assertion,
-        DurationSeconds: Math.round(durationHours * 60 * 60)
+        DurationSeconds: Math.round(durationHours * 60 * 60),
       })
       .promise();
 
@@ -930,7 +936,7 @@ export const login = {
       aws_access_key_id: res.Credentials.AccessKeyId,
       aws_secret_access_key: res.Credentials.SecretAccessKey,
       aws_session_token: res.Credentials.SessionToken,
-      aws_expiration: res.Credentials.Expiration.toISOString()
+      aws_expiration: res.Credentials.Expiration.toISOString(),
     });
-  }
+  },
 };

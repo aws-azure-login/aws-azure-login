@@ -12,18 +12,18 @@ export async function configureProfileAsync(
       name: "tenantId",
       message: "Azure Tenant ID:",
       validate: (input): boolean => !!input,
-      default: profile && profile.azure_tenant_id
+      default: profile && profile.azure_tenant_id,
     },
     {
       name: "appIdUri",
       message: "Azure App ID URI:",
       validate: (input): boolean => !!input,
-      default: profile && profile.azure_app_id_uri
+      default: profile && profile.azure_app_id_uri,
     },
     {
       name: "username",
       message: "Default Username:",
-      default: profile && profile.azure_default_username
+      default: profile && profile.azure_default_username,
     },
     {
       name: "rememberMe",
@@ -37,12 +37,12 @@ export async function configureProfileAsync(
       validate: (input): boolean | string => {
         if (input === "true" || input === "false") return true;
         return "Remember me must be either true or false";
-      }
+      },
     },
     {
       name: "defaultRoleArn",
       message: "Default Role ARN (if multiple):",
-      default: profile && profile.azure_default_role_arn
+      default: profile && profile.azure_default_role_arn,
     },
     {
       name: "defaultDurationHours",
@@ -52,8 +52,8 @@ export async function configureProfileAsync(
         input = Number(input);
         if (input > 0 && input <= 12) return true;
         return "Duration hours must be between 0 and 12";
-      }
-    }
+      },
+    },
   ]);
 
   await awsConfig.setProfileConfigValuesAsync(profileName, {
@@ -62,7 +62,7 @@ export async function configureProfileAsync(
     azure_default_username: answers.username,
     azure_default_role_arn: answers.defaultRoleArn,
     azure_default_duration_hours: answers.defaultDurationHours,
-    azure_default_remember_me: answers.rememberMe
+    azure_default_remember_me: answers.rememberMe,
   });
 
   console.log("Profile saved.");
