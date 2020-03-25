@@ -39,7 +39,7 @@
     "mkdirp": "^1.0.3",
     "proxy-agent": "^3.1.1",
     "puppeteer": "^2.1.1",
-    "uuid": "^3.3.2"
+    "uuid": "^7.0.2"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.30",
@@ -51,7 +51,7 @@
     "@types/mkdirp": "^1.0.0",
     "@types/node": "^12.12.31",
     "@types/puppeteer": "^2.0.1",
-    "@types/uuid": "^3.4.6",
+    "@types/uuid": "^7.0.2",
     "@typescript-eslint/eslint-plugin": "^2.25.0",
     "@typescript-eslint/parser": "^2.25.0",
     "eslint": "^6.8.0",
