@@ -681,19 +681,13 @@ export const login = {
             try {
               selected = await page.$(state.selector);
             } catch (err) {
-              debug(
-                `Error when running state "${state.name}". ${err.toString()}`
-              );
-              debug("Retrying...");
-
               // An error can be thrown if the page isn't in a good state.
               // If one occurs, try again after another loop.
-
               debug(
-                `Error when running state "${state.name}". ${err.toString()}`
+                `Error when running state "${
+                  state.name
+                }". ${err.toString()}. Retrying...`
               );
-              debug("Retrying...");
-
               break;
             }
 
