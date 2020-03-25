@@ -4,7 +4,7 @@ import inquirer, { QuestionCollection } from "inquirer";
 import zlib from "zlib";
 import AWS from "aws-sdk";
 import cheerio from "cheerio";
-import uuid from "uuid";
+import { v4 } from "uuid";
 import puppeteer from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
@@ -524,7 +524,7 @@ export const login = {
     assertionConsumerServiceURL: string
   ): Promise<string> {
     debug("Generating UUID for SAML request");
-    const id = uuid.v4();
+    const id = v4();
 
     const samlRequest = `
         <samlp:AuthnRequest xmlns="urn:oasis:names:tc:SAML:2.0:metadata" ID="id${id}" Version="2.0" IssueInstant="${new Date().toISOString()}" IsPassive="false" AssertionConsumerServiceURL="${assertionConsumerServiceURL}" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
