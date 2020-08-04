@@ -28,7 +28,7 @@
     "test": "npm run eslint && npm run prettier:check"
   },
   "dependencies": {
-    "aws-sdk": "^2.646.0",
+    "aws-sdk": "^2.726.0",
     "bluebird": "^3.7.2",
     "cheerio": "^1.0.0-rc.2",
     "commander": "^6.0.0",
