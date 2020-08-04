@@ -1,6 +1,6 @@
 import _ from "lodash";
 import Bluebird from "bluebird";
-import inquirer, { QuestionCollection } from "inquirer";
+import inquirer, { QuestionCollection, Question } from "inquirer";
 import zlib from "zlib";
 import AWS from "aws-sdk";
 import cheerio from "cheerio";
@@ -53,7 +53,9 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const errorMessage = await page.evaluate(
+          // eslint-disable-next-line
           (err) => err.textContent,
           error
         );
@@ -72,7 +74,7 @@ const states = [
             name: "username",
             message: "Username:",
             default: defaultUsername,
-          },
+          } as Question,
         ]));
       }
 
@@ -116,14 +118,18 @@ const states = [
     async handler(page: puppeteer.Page): Promise<void> {
       debug("Multiple accounts associated with username.");
       const aadTile = await page.$("#aadTileTitle");
-      const aadTileMessage = await page.evaluate(
-        (aadTile) => aadTile.textContent,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const aadTileMessage: string = await page.evaluate(
+        // eslint-disable-next-line
+        (a) => a.textContent,
         aadTile
       );
 
       const msaTile = await page.$("#msaTileTitle");
-      const msaTileMessage = await page.evaluate(
-        (msaTile) => msaTile.textContent,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const msaTileMessage: string = await page.evaluate(
+        // eslint-disable-next-line
+        (m) => m.textContent,
         msaTile
       );
 
@@ -149,7 +155,7 @@ const states = [
             type: "list",
             choices: _.map(accounts, "message"),
             default: aadTileMessage,
-          },
+          } as Question,
         ]);
 
         account = _.find(accounts, ["message", answers.account]);
@@ -177,7 +183,9 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const errorMessage = await page.evaluate(
+          // eslint-disable-next-line
           (err) => err.textContent,
           error
         );
@@ -197,7 +205,7 @@ const states = [
             name: "password",
             message: "Password:",
             type: "password",
-          },
+          } as Question,
         ]));
       }
 
@@ -221,7 +229,9 @@ const states = [
       page: puppeteer.Page,
       selected: puppeteer.ElementHandle
     ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
+        // eslint-disable-next-line
         (description) => description.textContent,
         selected
       );
@@ -241,7 +251,9 @@ const states = [
       page: puppeteer.Page,
       selected: puppeteer.ElementHandle
     ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
+        // eslint-disable-next-line
         (description) => description.textContent,
         selected
       );
@@ -255,15 +267,19 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const errorMessage = await page.evaluate(
+          // eslint-disable-next-line
           (err) => err.textContent,
           error
         );
         console.log(errorMessage);
       } else {
         const description = await page.$("#idDiv_SAOTCC_Description");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const descriptionMessage = await page.evaluate(
-          (description) => description.textContent,
+          // eslint-disable-next-line
+          (d) => d.textContent,
           description
         );
         console.log(descriptionMessage);
@@ -273,7 +289,7 @@ const states = [
         {
           name: "verificationCode",
           message: "Verification Code:",
-        },
+        } as Question,
       ]);
 
       debug("Focusing on verification code input");
@@ -336,7 +352,9 @@ const states = [
       page: puppeteer.Page,
       selected: puppeteer.ElementHandle
     ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
+        // eslint-disable-next-line
         (description) => description.textContent,
         selected
       );
@@ -625,26 +643,29 @@ export const login = {
       let samlResponseData;
       const samlResponsePromise = new Promise((resolve) => {
         page.on("request", (req) => {
-          const url = req.url();
+          const reqURL = req.url();
           debug(`Request: ${url}`);
           if (
-            url === AWS_SAML_ENDPOINT ||
-            url === AWS_GOV_SAML_ENDPOINT ||
-            url === AWS_CN_SAML_ENDPOINT
+            reqURL === AWS_SAML_ENDPOINT ||
+            reqURL === AWS_GOV_SAML_ENDPOINT ||
+            reqURL === AWS_CN_SAML_ENDPOINT
           ) {
             resolve();
             samlResponseData = req.postData();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             req.respond({
               status: 200,
               contentType: "text/plain",
               body: "",
             });
             if (browser) {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               browser.close();
             }
             browser = undefined;
             debug(`Received SAML response, browser closed`);
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             req.continue();
           }
         });
@@ -662,9 +683,11 @@ export const login = {
           await page.waitForNavigation({ waitUntil: "networkidle0" });
         }
       } catch (err) {
-        // An error will be thrown if you're still logged in cause the page.goto ot waitForNavigation
-        // will be a redirect to AWS. That's usually OK
-        debug(`Error occured during loading the first page: ${err.message}`);
+        if (err instanceof Error) {
+          // An error will be thrown if you're still logged in cause the page.goto ot waitForNavigation
+          // will be a redirect to AWS. That's usually OK
+          debug(`Error occured during loading the first page: ${err.message}`);
+        }
       }
 
       if (cliProxy) {
@@ -681,13 +704,15 @@ export const login = {
             try {
               selected = await page.$(state.selector);
             } catch (err) {
-              // An error can be thrown if the page isn't in a good state.
-              // If one occurs, try again after another loop.
-              debug(
-                `Error when running state "${
-                  state.name
-                }". ${err.toString()}. Retrying...`
-              );
+              if (err instanceof Error) {
+                // An error can be thrown if the page isn't in a good state.
+                // If one occurs, try again after another loop.
+                debug(
+                  `Error when running state "${
+                    state.name
+                  }". ${err.toString()}. Retrying...`
+                );
+              }
               break;
             }
 
@@ -739,9 +764,12 @@ export const login = {
       }
 
       const samlResponse = querystring.parse(samlResponseData).SAMLResponse;
+
       debug("Found SAML response", samlResponse);
 
-      if (Array.isArray(samlResponse)) {
+      if (!samlResponse) {
+        throw new Error("SAML response not found");
+      } else if (Array.isArray(samlResponse)) {
         throw new Error("SAML can't be an array");
       }
 
@@ -768,11 +796,12 @@ export const login = {
     const saml = cheerio.load(samlText, { xmlMode: true });
 
     debug("Looking for role SAML attribute");
-    const roles = saml(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const roles: Role[] = saml(
       "Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue"
     )
       .map(function () {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const roleAndPrincipal = saml(this).text();
         const parts = roleAndPrincipal.split(",");
@@ -809,7 +838,7 @@ export const login = {
     durationHours: number;
   }> {
     let role;
-    let durationHours;
+    let durationHours = parseInt(defaultDurationHours, 10);
     const questions: QuestionCollection[] = [];
     if (roles.length === 0) {
       throw new CLIError("No roles found in SAML response.");
@@ -837,7 +866,6 @@ export const login = {
 
     if (noPrompt && defaultDurationHours) {
       debug("Default durationHours found. No need to ask.");
-      durationHours = defaultDurationHours;
     } else {
       questions.push({
         name: "durationHours",
@@ -857,7 +885,7 @@ export const login = {
     if (questions.length > 0) {
       const answers = await inquirer.prompt(questions);
       if (!role) role = _.find(roles, ["roleArn", answers.role]);
-      if (!durationHours) durationHours = answers.durationHours;
+      if (!durationHours) durationHours = answers.durationHours as number;
     }
 
     if (!role) {

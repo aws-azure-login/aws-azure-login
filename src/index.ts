@@ -3,11 +3,14 @@
 process.on("SIGINT", () => process.exit(1));
 process.on("SIGTERM", () => process.exit(1));
 
-import commander from "commander";
+import { Command } from "commander";
 import { configureProfileAsync } from "./configureProfileAsync";
 import { login } from "./login";
 
-commander
+const program = new Command();
+
+program
+  .option("-p, --profile", "profile")
   .option(
     "-p, --profile <name>",
     "The name of the profile to log in with (or configure)"
@@ -49,19 +52,22 @@ commander
   )
   .parse(process.argv);
 
-const profileName = commander.profile || process.env.AWS_PROFILE || "default";
-const mode = commander.mode || "cli";
-const disableSandbox = !commander.sandbox;
-const noPrompt = !commander.prompt;
-const enableChromeNetworkService = commander.enableChromeNetworkService;
-const awsNoVerifySsl = !commander.verifySsl;
-const enableChromeSeamlessSso = commander.enableChromeSeamlessSso;
-const forceRefresh = commander.forceRefresh;
-const noDisableExtensions = !commander.disableExtensions;
+const profileName =
+  (program.profile as string | undefined) ||
+  process.env.AWS_PROFILE ||
+  "default";
+const mode = (program.mode as string | undefined) || "cli";
+const disableSandbox = !program.sandbox;
+const noPrompt = !program.prompt;
+const enableChromeNetworkService = !!program.enableChromeNetworkService;
+const awsNoVerifySsl = !program.verifySsl;
+const enableChromeSeamlessSso = !!program.enableChromeSeamlessSso;
+const forceRefresh = !!program.forceRefresh;
+const noDisableExtensions = !program.disableExtensions;
 
 Promise.resolve()
   .then(() => {
-    if (commander.allProfiles) {
+    if (program.allProfiles) {
       return login.loginAll(
         mode,
         disableSandbox,
@@ -74,7 +80,7 @@ Promise.resolve()
       );
     }
 
-    if (commander.configure) return configureProfileAsync(profileName);
+    if (program.configure) return configureProfileAsync(profileName);
     return login.loginAsync(
       profileName,
       mode,
@@ -86,7 +92,7 @@ Promise.resolve()
       noDisableExtensions
     );
   })
-  .catch((err) => {
+  .catch((err: Error) => {
     if (err.name === "CLIError") {
       console.error(err.message);
       process.exit(2);

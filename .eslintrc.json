@@ -19,13 +19,5 @@
     "prettier",
     "prettier/@typescript-eslint"
   ],
-  "rules": {
-    "@typescript-eslint/camelcase": [
-      "error",
-      {
-        "properties": "never",
-        "ignoreDestructuring": true
-      }
-    ]
-  }
+  "rules": {}
 }

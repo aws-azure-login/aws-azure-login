@@ -7,7 +7,6 @@ import util from "util";
 
 const debug = _debug("aws-azure-login");
 
-const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 
 // Autorefresh credential time limit in milliseconds
@@ -128,24 +127,25 @@ export const awsConfig = {
   async _loadAsync<T>(type: string): Promise<T | undefined> {
     if (!paths[type]) throw new Error(`Unknown config type: '${type}'`);
 
-    let data;
-    try {
+    return new Promise<T | undefined>((resolve, reject) => {
       debug(`Loading '${type}' file at '${paths[type]}'`);
-      data = await readFile(paths[type], "utf8");
-    } catch (err) {
-      if (err.code === "ENOENT") {
-        debug(`File not found. Returning undefined.`);
-        return undefined;
-      } else {
-        throw err;
-      }
-    }
+      fs.readFile(paths[type], "utf8", (err, data) => {
+        if (err) {
+          if (err.code === "ENOENT") {
+            debug(`File not found. Returning undefined.`);
+            return resolve(undefined);
+          } else {
+            return reject(err);
+          }
+        }
 
-    debug(`Parsing data`);
+        debug("Parsing data");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parsedIni: any = ini.parse(data);
-    return parsedIni;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parsedIni: any = ini.parse(data);
+        return resolve(parsedIni);
+      });
+    });
   },
 
   async _saveAsync(type: string, data: unknown): Promise<void> {

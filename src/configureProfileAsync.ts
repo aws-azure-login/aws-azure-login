@@ -1,4 +1,4 @@
-import inquirer from "inquirer";
+import inquirer, { Question } from "inquirer";
 import { awsConfig } from "./awsConfig";
 
 export async function configureProfileAsync(
@@ -7,7 +7,8 @@ export async function configureProfileAsync(
   console.log(`Configuring profile '${profileName}'`);
 
   const profile = await awsConfig.getProfileConfigAsync(profileName);
-  const answers = await inquirer.prompt([
+
+  const questions: Question[] = [
     {
       name: "tenantId",
       message: "Azure Tenant ID:",
@@ -54,15 +55,17 @@ export async function configureProfileAsync(
         return "Duration hours must be between 0 and 12";
       },
     },
-  ]);
+  ];
+
+  const answers = await inquirer.prompt(questions);
 
   await awsConfig.setProfileConfigValuesAsync(profileName, {
-    azure_tenant_id: answers.tenantId,
-    azure_app_id_uri: answers.appIdUri,
-    azure_default_username: answers.username,
-    azure_default_role_arn: answers.defaultRoleArn,
-    azure_default_duration_hours: answers.defaultDurationHours,
-    azure_default_remember_me: answers.rememberMe,
+    azure_tenant_id: answers.tenantId as string,
+    azure_app_id_uri: answers.appIdUri as string,
+    azure_default_username: answers.username as string,
+    azure_default_role_arn: answers.defaultRoleArn as string,
+    azure_default_duration_hours: answers.defaultDurationHours as string,
+    azure_default_remember_me: (answers.rememberMe as string) === "true",
   });
 
   console.log("Profile saved.");
