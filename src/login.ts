@@ -78,6 +78,12 @@ const states = [
         ]));
       }
 
+      debug("Waiting for username input to be visible");
+      await page.waitForSelector(`input[name="loginfmt"]`, {
+        visible: true,
+        timeout: 60000,
+      });
+
       debug("Focusing on username input");
       await page.focus(`input[name="loginfmt"]`);
 
@@ -90,6 +96,12 @@ const states = [
       await page.keyboard.type(username);
 
       await Bluebird.delay(500);
+
+      debug("Waiting for submit button to be visible");
+      await page.waitForSelector(`input[type=submit]`, {
+        visible: true,
+        timeout: 60000,
+      });
 
       debug("Submitting form");
       await page.click("input[type=submit]");
