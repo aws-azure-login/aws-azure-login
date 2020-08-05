@@ -81,7 +81,7 @@ const states = [
       debug("Waiting for username input to be visible");
       await page.waitForSelector(`input[name="loginfmt"]`, {
         visible: true,
-        timeout: 60000
+        timeout: 60000,
       });
 
       debug("Focusing on username input");
@@ -100,7 +100,7 @@ const states = [
       debug("Waiting for submit button to be visible");
       await page.waitForSelector(`input[type=submit]`, {
         visible: true,
-        timeout: 60000
+        timeout: 60000,
       });
 
       debug("Submitting form");
