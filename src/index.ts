@@ -10,7 +10,6 @@ import { login } from "./login";
 const program = new Command();
 
 program
-  .option("-p, --profile", "profile")
   .option(
     "-p, --profile <name>",
     "The name of the profile to log in with (or configure)"
