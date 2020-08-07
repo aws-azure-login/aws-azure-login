@@ -2,25 +2,27 @@
 [![npm module downloads per month](http://img.shields.io/npm/dm/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
 
 # aws-azure-login
+
 If your organization uses [Azure Active Directory](https://azure.microsoft.com) to provide SSO login to the AWS console, then there is no easy way to log in on the command line or to use the [AWS CLI](https://aws.amazon.com/cli/). This tool fixes that. It lets you use the normal Azure AD login (including MFA) from a command line to create a federated AWS session and places the temporary credentials in the proper place for the AWS CLI and SDKs.
 
 ## Installation
 
 ### Windows
+
 Install [Node.js](https://nodejs.org/) v7.6.0 or higher. Then install aws-azure-login with npm:
 
     npm install -g aws-azure-login
 
 ### Linux
 
-In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v7.6.0 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions. 
+In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v7.6.0 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions.
 
 #### Option A: Install for All Users
 
 Install aws-azure-login globally with npm:
 
     sudo npm install -g aws-azure-login --unsafe-perm
-    
+
 Puppeteer doesn't install globally with execution permissions for all users so you'll need to modify them:
 
     sudo chmod -R go+rx $(npm root -g)
@@ -28,14 +30,14 @@ Puppeteer doesn't install globally with execution permissions for all users so y
 #### Option B: Install Only for Current User
 
 First configure npm to install global packages in [your home directory](https://docs.npmjs.com/getting-started/fixing-npm-permissions):
-   
+
     mkdir ~/.npm-global
     npm config set prefix '~/.npm-global'
     export PATH=~/.npm-global/bin:$PATH
     source ~/.profile
     echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.profile
     source ~/.profile
-     
+
 Then install aws-azure-login:
 
     npm install -g aws-azure-login
@@ -44,13 +46,13 @@ Then install aws-azure-login:
 
 A Docker image has been built with aws-azure-login preinstalled. You simply need to run the command with a volume mounted to your AWS configuration directory.
 
-    docker run --rm -it -v ~/.aws:/root/.aws dtjohnson/aws-azure-login
-    
+    docker run --rm -it -v ~/.aws:/root/.aws sportradar/aws-azure-login
+
 The Docker image is configured with an entrypoint so you can just feed any arguments in at the end.
 
 You can also put the docker-launch.sh script into your bin directory for the aws-azure-login command to function as usual:
 
-    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/dtjohnson/aws-azure-login/master/docker-launch.sh
+    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/sportradar/aws-azure-login/main/docker-launch.sh
     sudo chmod o+x /usr/local/bin/aws-azure-login
 
 Now just run `aws-azure-login`.
@@ -59,20 +61,73 @@ Now just run `aws-azure-login`.
 
 ### Configuration
 
+#### AWS
+
 To configure the aws-azure-login client run:
 
     aws-azure-login --configure
-    
+
 You'll need your Azure Tenant ID and the App ID URI. To configure a named profile, use the --profile flag.
 
     aws-azure-login --configure --profile foo
-    
+
+##### GovCloud Support
+
+To use aws-azure-login with AWS GovCloud, set the `region` profile property in your ~/.aws/config to the one of the GovCloud regions:
+
+- us-gov-west-1
+- us-gov-east-1
+
+##### China Region Support
+
+To use aws-azure-login with AWS China Cloud, set the `region` profile property in your ~/.aws/config to the China region:
+
+- cn-north-1
+
+#### Staying logged in, skip username/password for future logins
+
+During the configuration you can decide to stay logged in:
+
+    ? Stay logged in: skip authentication while refreshing aws credentials (true|false) (false)
+
+If you set this configuration to true, the usual authentication with username/password/MFA is skipped as it's using session cookies to remember your identity. This enables you to use `--no-prompt` without the need to store your password anywhere, it's an alternative for using environment variables as described below.
+As soon as you went through the full login procedure once, you can just use:
+
+    aws-azure-login --no-prompt
+
+or
+
+    aws-azure-login --profile foo --no-prompt
+
+to refresh your aws credentials.
+
+#### Environment Variables
+
+You can optionally store your responses as environment variables:
+
+- `AZURE_TENANT_ID`
+- `AZURE_APP_ID_URI`
+- `AZURE_DEFAULT_USERNAME`
+- `AZURE_DEFAULT_PASSWORD`
+- `AZURE_DEFAULT_ROLE_ARN`
+- `AZURE_DEFAULT_DURATION_HOURS`
+
+To avoid having to `<Enter>` through the prompts after setting these environment variables, use the `--no-prompt` option when running the command.
+
+    aws-azure-login --no-prompt
+
+Use the `HISTCONTROL` environment variable to avoid storing the password in your bash history (notice the space at the beginning):
+
+    $ HISTCONTROL=ignoreboth
+    $  export AZURE_DEFAULT_PASSWORD=mypassword
+    $ aws-azure-login
+
 ### Logging In
 
 Once aws-azure-login is configured, you can log in. For the default profile, just run:
 
     aws-azure-login
-    
+
 You will be prompted for your username and password. If MFA is required you'll also be prompted for a verification code or mobile device approval. To log in with a named profile:
 
     aws-azure-login --profile foo
@@ -93,7 +148,22 @@ _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome
 
 ### Behind corporate proxy
 
-If behind corporate proxy, then just set https\_proxy env variable.
+If behind corporate proxy, then just set https_proxy env variable.
+
+## Automation
+
+### Renew credentials for all configured profiles
+
+You can renew credentials for all configured profiles in one run. This is especially useful, if the maximum session length on AWS side is configured to a low value due to security constraints. Just run:
+
+    aws-azure-login --all-profiles
+
+If you configure all profiles to stay logged in, you can easily skip the prompts:
+
+    aws-azure-login --all-profiles --no-prompt
+
+This will allow you to automate the credentials refresh procedure, eg. by running a cronjob every 5 minutes.
+To skip unnecessary calls, the credentials are only getting refreshed if the time to expire is lower than 11 minutes.
 
 ## Getting Your Tenant ID and App ID URI
 
