@@ -51,6 +51,7 @@ jobs:
           name: sportradar/aws-azure-login
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+          snapshot: true
           dockerfile: Dockerfile
 
   publish-snap:
