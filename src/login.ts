@@ -897,7 +897,9 @@ export const login = {
     if (questions.length > 0) {
       const answers = await inquirer.prompt(questions);
       if (!role) role = _.find(roles, ["roleArn", answers.role]);
-      if (!durationHours) durationHours = answers.durationHours as number;
+      if (answers.durationHours) {
+        durationHours = parseInt(answers.durationHours as string, 10);
+      }
     }
 
     if (!role) {
