@@ -9,14 +9,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: 10
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         with:
           name: lib
           path: lib
@@ -25,8 +25,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
         with:
           name: lib
       - uses: actions/setup-node@v1
@@ -41,8 +41,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
         with:
           name: lib
       - name: Publish to Registry
@@ -57,16 +57,17 @@ jobs:
   publish-snap:
     needs: build
     runs-on: ubuntu-latest
-    container:
-      image: snapcore/snapcraft
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
         with:
           name: lib
       - name: Publish to Snap Store
         run: |
+          sudo snap install snapcraft --classic
           echo ${{ secrets.SNAPCRAFT_LOGINFILE }} | base64 --decode > snapcraft-login
           snapcraft login --with snapcraft-login
           snapcraft
           snapcraft push *.snap --release stable
+        env:
+          SNAPCRAFT_BUILD_ENVIRONMENT: host
