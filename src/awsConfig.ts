@@ -7,9 +7,7 @@ import util from "util";
 
 const debug = _debug("aws-azure-login");
 
-const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
-const mkdirpPromise = util.promisify(mkdirp);
 
 // Autorefresh credential time limit in milliseconds
 const refreshLimitInMs = 11 * 60 * 1000;
@@ -48,7 +46,7 @@ export const awsConfig = {
 
     config[sectionName] = {
       ...config[sectionName],
-      ...values
+      ...values,
     };
 
     await this._saveAsync("config", config);
@@ -93,8 +91,9 @@ export const awsConfig = {
 
     const timeDifference = expirationDate.getTime() - new Date().getTime();
     debug(
-      `Remaining time till credential expiration: ${timeDifference /
-        1000}s, refresh due if time lower than: ${refreshLimitInMs / 1000}s`
+      `Remaining time till credential expiration: ${
+        timeDifference / 1000
+      }s, refresh due if time lower than: ${refreshLimitInMs / 1000}s`
     );
     return timeDifference < refreshLimitInMs;
   },
@@ -118,7 +117,7 @@ export const awsConfig = {
     const config =
       (await this._loadAsync<{ [key: string]: ProfileConfig }>("config")) || {};
 
-    const profiles = Object.keys(config).map(function(e) {
+    const profiles = Object.keys(config).map(function (e) {
       return e.replace("profile ", "");
     });
     debug(`Received profiles: ${profiles.toString()}`);
@@ -128,24 +127,25 @@ export const awsConfig = {
   async _loadAsync<T>(type: string): Promise<T | undefined> {
     if (!paths[type]) throw new Error(`Unknown config type: '${type}'`);
 
-    let data;
-    try {
+    return new Promise<T | undefined>((resolve, reject) => {
       debug(`Loading '${type}' file at '${paths[type]}'`);
-      data = await readFile(paths[type], "utf8");
-    } catch (err) {
-      if (err.code === "ENOENT") {
-        debug(`File not found. Returning undefined.`);
-        return undefined;
-      } else {
-        throw err;
-      }
-    }
+      fs.readFile(paths[type], "utf8", (err, data) => {
+        if (err) {
+          if (err.code === "ENOENT") {
+            debug(`File not found. Returning undefined.`);
+            return resolve(undefined);
+          } else {
+            return reject(err);
+          }
+        }
 
-    debug(`Parsing data`);
+        debug("Parsing data");
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const parsedIni: any = ini.parse(data);
-    return parsedIni;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const parsedIni: any = ini.parse(data);
+        return resolve(parsedIni);
+      });
+    });
   },
 
   async _saveAsync(type: string, data: unknown): Promise<void> {
@@ -156,9 +156,9 @@ export const awsConfig = {
     const text = ini.stringify(data);
 
     debug(`Creating AWS config directory '${paths.awsDir}' if not exists.`);
-    await mkdirpPromise(paths.awsDir);
+    await mkdirp(paths.awsDir);
 
     debug(`Writing '${type}' INI to file '${paths[type]}'`);
     await writeFile(paths[type], text);
-  }
+  },
 };

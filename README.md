@@ -9,13 +9,13 @@ If your organization uses [Azure Active Directory](https://azure.microsoft.com) 
 
 ### Windows
 
-Install [Node.js](https://nodejs.org/) v7.6.0 or higher. Then install aws-azure-login with npm:
+Install [Node.js](https://nodejs.org/) v12 or higher. Then install aws-azure-login with npm:
 
     npm install -g aws-azure-login
 
 ### Linux
 
-In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v7.6.0 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions.
+In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v12 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions.
 
 #### Option A: Install for All Users
 
@@ -52,10 +52,14 @@ The Docker image is configured with an entrypoint so you can just feed any argum
 
 You can also put the docker-launch.sh script into your bin directory for the aws-azure-login command to function as usual:
 
-    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/sportradar/aws-azure-login/master/docker-launch.sh
+    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/sportradar/aws-azure-login/main/docker-launch.sh
     sudo chmod o+x /usr/local/bin/aws-azure-login
 
 Now just run `aws-azure-login`.
+
+### Snap
+
+https://snapcraft.io/aws-azure-login
 
 ## Usage
 

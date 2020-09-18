@@ -1,10 +1,10 @@
 import _ from "lodash";
 import Bluebird from "bluebird";
-import inquirer, { QuestionCollection } from "inquirer";
+import inquirer, { QuestionCollection, Question } from "inquirer";
 import zlib from "zlib";
 import AWS from "aws-sdk";
 import cheerio from "cheerio";
-import uuid from "uuid";
+import { v4 } from "uuid";
 import puppeteer from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
@@ -14,11 +14,8 @@ import proxy from "proxy-agent";
 import https from "https";
 import { paths } from "./paths";
 import mkdirp from "mkdirp";
-import util from "util";
 
 const debug = _debug("aws-azure-login");
-
-const mkdirpPromise = util.promisify(mkdirp);
 
 const WIDTH = 425;
 const HEIGHT = 550;
@@ -56,7 +53,12 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        const errorMessage = await page.evaluate(err => err.textContent, error);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const errorMessage = await page.evaluate(
+          // eslint-disable-next-line
+          (err) => err.textContent,
+          error
+        );
         console.log(errorMessage);
       }
 
@@ -71,10 +73,16 @@ const states = [
           {
             name: "username",
             message: "Username:",
-            default: defaultUsername
-          }
+            default: defaultUsername,
+          } as Question,
         ]));
       }
+
+      debug("Waiting for username input to be visible");
+      await page.waitForSelector(`input[name="loginfmt"]`, {
+        visible: true,
+        timeout: 60000,
+      });
 
       debug("Focusing on username input");
       await page.focus(`input[name="loginfmt"]`);
@@ -88,6 +96,12 @@ const states = [
       await page.keyboard.type(username);
 
       await Bluebird.delay(500);
+
+      debug("Waiting for submit button to be visible");
+      await page.waitForSelector(`input[type=submit]`, {
+        visible: true,
+        timeout: 60000,
+      });
 
       debug("Submitting form");
       await page.click("input[type=submit]");
@@ -104,11 +118,11 @@ const states = [
           await Bluebird.delay(1000);
           await page.waitForSelector(`input[name=loginfmt]`, {
             hidden: true,
-            timeout: 60000
+            timeout: 60000,
           });
-        })()
+        })(),
       ]);
-    }
+    },
   },
   {
     name: "account selection",
@@ -116,20 +130,24 @@ const states = [
     async handler(page: puppeteer.Page): Promise<void> {
       debug("Multiple accounts associated with username.");
       const aadTile = await page.$("#aadTileTitle");
-      const aadTileMessage = await page.evaluate(
-        aadTile => aadTile.textContent,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const aadTileMessage: string = await page.evaluate(
+        // eslint-disable-next-line
+        (a) => a.textContent,
         aadTile
       );
 
       const msaTile = await page.$("#msaTileTitle");
-      const msaTileMessage = await page.evaluate(
-        msaTile => msaTile.textContent,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const msaTileMessage: string = await page.evaluate(
+        // eslint-disable-next-line
+        (m) => m.textContent,
         msaTile
       );
 
       const accounts = [
         { message: aadTileMessage, selector: "#aadTileTitle" },
-        { message: msaTileMessage, selector: "#msaTileTitle" }
+        { message: msaTileMessage, selector: "#msaTileTitle" },
       ];
 
       let account;
@@ -148,8 +166,8 @@ const states = [
             message: "Account:",
             type: "list",
             choices: _.map(accounts, "message"),
-            default: aadTileMessage
-          }
+            default: aadTileMessage,
+          } as Question,
         ]);
 
         account = _.find(accounts, ["message", answers.account]);
@@ -162,7 +180,7 @@ const states = [
       debug(`Proceeding with account ${account.selector}`);
       await page.click(account.selector);
       await Bluebird.delay(500);
-    }
+    },
   },
   {
     name: "password input",
@@ -177,7 +195,12 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        const errorMessage = await page.evaluate(err => err.textContent, error);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const errorMessage = await page.evaluate(
+          // eslint-disable-next-line
+          (err) => err.textContent,
+          error
+        );
         console.log(errorMessage);
         defaultPassword = ""; // Password error. Unset the default and allow user to enter it.
       }
@@ -193,8 +216,8 @@ const states = [
           {
             name: "password",
             message: "Password:",
-            type: "password"
-          }
+            type: "password",
+          } as Question,
         ]));
       }
 
@@ -209,7 +232,7 @@ const states = [
 
       debug("Waiting for a delay");
       await Bluebird.delay(500);
-    }
+    },
   },
   {
     name: "TFA instructions",
@@ -218,8 +241,10 @@ const states = [
       page: puppeteer.Page,
       selected: puppeteer.ElementHandle
     ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
-        description => description.textContent,
+        // eslint-disable-next-line
+        (description) => description.textContent,
         selected
       );
       console.log(descriptionMessage);
@@ -227,9 +252,9 @@ const states = [
       debug("Waiting for response");
       await page.waitForSelector(`#idDiv_SAOTCAS_Description`, {
         hidden: true,
-        timeout: 60000
+        timeout: 60000,
       });
-    }
+    },
   },
   {
     name: "TFA failed",
@@ -238,12 +263,14 @@ const states = [
       page: puppeteer.Page,
       selected: puppeteer.ElementHandle
     ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
-        description => description.textContent,
+        // eslint-disable-next-line
+        (description) => description.textContent,
         selected
       );
       throw new CLIError(descriptionMessage);
-    }
+    },
   },
   {
     name: "TFA code input",
@@ -252,12 +279,19 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        const errorMessage = await page.evaluate(err => err.textContent, error);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const errorMessage = await page.evaluate(
+          // eslint-disable-next-line
+          (err) => err.textContent,
+          error
+        );
         console.log(errorMessage);
       } else {
         const description = await page.$("#idDiv_SAOTCC_Description");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const descriptionMessage = await page.evaluate(
-          description => description.textContent,
+          // eslint-disable-next-line
+          (d) => d.textContent,
           description
         );
         console.log(descriptionMessage);
@@ -266,8 +300,8 @@ const states = [
       const { verificationCode } = await inquirer.prompt([
         {
           name: "verificationCode",
-          message: "Verification Code:"
-        }
+          message: "Verification Code:",
+        } as Question,
       ]);
 
       debug("Focusing on verification code input");
@@ -294,11 +328,11 @@ const states = [
           await Bluebird.delay(1000);
           await page.waitForSelector(`input[name=otc]`, {
             hidden: true,
-            timeout: 60000
+            timeout: 60000,
           });
-        })()
+        })(),
       ]);
-    }
+    },
   },
   {
     name: "Remember me",
@@ -321,7 +355,7 @@ const states = [
 
       debug("Waiting for a delay");
       await Bluebird.delay(500);
-    }
+    },
   },
   {
     name: "Service exception",
@@ -330,13 +364,15 @@ const states = [
       page: puppeteer.Page,
       selected: puppeteer.ElementHandle
     ): Promise<void> {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
-        description => description.textContent,
+        // eslint-disable-next-line
+        (description) => description.textContent,
         selected
       );
       throw new CLIError(descriptionMessage);
-    }
-  }
+    },
+  },
 ];
 
 export const login = {
@@ -459,7 +495,7 @@ export const login = {
       "azure_default_username",
       "azure_default_password",
       "azure_default_role_arn",
-      "azure_default_duration_hours"
+      "azure_default_duration_hours",
     ];
     for (let i = 0; i < options.length; i++) {
       const opt = options[i];
@@ -475,7 +511,7 @@ export const login = {
     debug("Environment");
     debug({
       ...env,
-      azure_default_password: "xxxxxxxxxx"
+      azure_default_password: "xxxxxxxxxx",
     });
     return env;
   },
@@ -518,7 +554,7 @@ export const login = {
     assertionConsumerServiceURL: string
   ): Promise<string> {
     debug("Generating UUID for SAML request");
-    const id = uuid.v4();
+    const id = v4();
 
     const samlRequest = `
         <samlp:AuthnRequest xmlns="urn:oasis:names:tc:SAML:2.0:metadata" ID="id${id}" Version="2.0" IssueInstant="${new Date().toISOString()}" IsPassive="false" AssertionConsumerServiceURL="${assertionConsumerServiceURL}" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
@@ -595,7 +631,7 @@ export const login = {
           `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
         );
       if (rememberMe) {
-        await mkdirpPromise(paths.chromium);
+        await mkdirp(paths.chromium);
         args.push(`--user-data-dir=${paths.chromium}`);
       }
       const ignoreDefaultArgs = noDisableExtensions
@@ -605,7 +641,7 @@ export const login = {
       browser = await puppeteer.launch({
         headless,
         args,
-        ignoreDefaultArgs
+        ignoreDefaultArgs,
       });
 
       // Wait for a bit as sometimes the browser isn't ready.
@@ -617,28 +653,31 @@ export const login = {
 
       // Prevent redirection to AWS
       let samlResponseData;
-      const samlResponsePromise = new Promise(resolve => {
-        page.on("request", req => {
-          const url = req.url();
+      const samlResponsePromise = new Promise((resolve) => {
+        page.on("request", (req) => {
+          const reqURL = req.url();
           debug(`Request: ${url}`);
           if (
-            url === AWS_SAML_ENDPOINT ||
-            url === AWS_GOV_SAML_ENDPOINT ||
-            url === AWS_CN_SAML_ENDPOINT
+            reqURL === AWS_SAML_ENDPOINT ||
+            reqURL === AWS_GOV_SAML_ENDPOINT ||
+            reqURL === AWS_CN_SAML_ENDPOINT
           ) {
             resolve();
             samlResponseData = req.postData();
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             req.respond({
               status: 200,
               contentType: "text/plain",
-              body: ""
+              body: "",
             });
             if (browser) {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               browser.close();
             }
             browser = undefined;
             debug(`Received SAML response, browser closed`);
           } else {
+            // eslint-disable-next-line @typescript-eslint/no-floating-promises
             req.continue();
           }
         });
@@ -656,9 +695,11 @@ export const login = {
           await page.waitForNavigation({ waitUntil: "networkidle0" });
         }
       } catch (err) {
-        // An error will be thrown if you're still logged in cause the page.goto ot waitForNavigation
-        // will be a redirect to AWS. That's usually OK
-        debug(`Error occured during loading the first page: ${err.message}`);
+        if (err instanceof Error) {
+          // An error will be thrown if you're still logged in cause the page.goto ot waitForNavigation
+          // will be a redirect to AWS. That's usually OK
+          debug(`Error occured during loading the first page: ${err.message}`);
+        }
       }
 
       if (cliProxy) {
@@ -675,19 +716,15 @@ export const login = {
             try {
               selected = await page.$(state.selector);
             } catch (err) {
-              debug(
-                `Error when running state "${state.name}". ${err.toString()}`
-              );
-              debug("Retrying...");
-
-              // An error can be thrown if the page isn't in a good state.
-              // If one occurs, try again after another loop.
-
-              debug(
-                `Error when running state "${state.name}". ${err.toString()}`
-              );
-              debug("Retrying...");
-
+              if (err instanceof Error) {
+                // An error can be thrown if the page isn't in a good state.
+                // If one occurs, try again after another loop.
+                debug(
+                  `Error when running state "${
+                    state.name
+                  }". ${err.toString()}. Retrying...`
+                );
+              }
               break;
             }
 
@@ -704,7 +741,7 @@ export const login = {
                   defaultUsername,
                   defaultPassword,
                   rememberMe
-                )
+                ),
               ]);
 
               debug(`Finished state: ${state.name}`);
@@ -739,9 +776,12 @@ export const login = {
       }
 
       const samlResponse = querystring.parse(samlResponseData).SAMLResponse;
+
       debug("Found SAML response", samlResponse);
 
-      if (Array.isArray(samlResponse)) {
+      if (!samlResponse) {
+        throw new Error("SAML response not found");
+      } else if (Array.isArray(samlResponse)) {
         throw new Error("SAML can't be an array");
       }
 
@@ -768,11 +808,12 @@ export const login = {
     const saml = cheerio.load(samlText, { xmlMode: true });
 
     debug("Looking for role SAML attribute");
-    const roles = saml(
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const roles: Role[] = saml(
       "Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue"
     )
-      .map(function() {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+      .map(function () {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const roleAndPrincipal = saml(this).text();
         const parts = roleAndPrincipal.split(",");
@@ -809,7 +850,7 @@ export const login = {
     durationHours: number;
   }> {
     let role;
-    let durationHours;
+    let durationHours = parseInt(defaultDurationHours, 10);
     const questions: QuestionCollection[] = [];
     if (roles.length === 0) {
       throw new CLIError("No roles found in SAML response.");
@@ -830,14 +871,13 @@ export const login = {
           message: "Role:",
           type: "list",
           choices: _.sortBy(_.map(roles, "roleArn")),
-          default: defaultRoleArn
+          default: defaultRoleArn,
         });
       }
     }
 
     if (noPrompt && defaultDurationHours) {
       debug("Default durationHours found. No need to ask.");
-      durationHours = defaultDurationHours;
     } else {
       questions.push({
         name: "durationHours",
@@ -848,7 +888,7 @@ export const login = {
           input = Number(input);
           if (input > 0 && input <= 12) return true;
           return "Duration hours must be between 0 and 12";
-        }
+        },
       });
     }
 
@@ -857,7 +897,9 @@ export const login = {
     if (questions.length > 0) {
       const answers = await inquirer.prompt(questions);
       if (!role) role = _.find(roles, ["roleArn", answers.role]);
-      if (!durationHours) durationHours = answers.durationHours;
+      if (answers.durationHours) {
+        durationHours = parseInt(answers.durationHours as string, 10);
+      }
     }
 
     if (!role) {
@@ -890,8 +932,8 @@ export const login = {
     if (process.env.https_proxy) {
       AWS.config.update({
         httpOptions: {
-          agent: proxy(process.env.https_proxy)
-        }
+          agent: proxy(process.env.https_proxy),
+        },
       });
     }
 
@@ -899,15 +941,15 @@ export const login = {
       AWS.config.update({
         httpOptions: {
           agent: new https.Agent({
-            rejectUnauthorized: false
-          })
-        }
+            rejectUnauthorized: false,
+          }),
+        },
       });
     }
 
     if (region) {
       AWS.config.update({
-        region
+        region,
       });
     }
 
@@ -917,7 +959,7 @@ export const login = {
         PrincipalArn: role.principalArn,
         RoleArn: role.roleArn,
         SAMLAssertion: assertion,
-        DurationSeconds: Math.round(durationHours * 60 * 60)
+        DurationSeconds: Math.round(durationHours * 60 * 60),
       })
       .promise();
 
@@ -930,7 +972,7 @@ export const login = {
       aws_access_key_id: res.Credentials.AccessKeyId,
       aws_secret_access_key: res.Credentials.SecretAccessKey,
       aws_session_token: res.Credentials.SessionToken,
-      aws_expiration: res.Credentials.Expiration.toISOString()
+      aws_expiration: res.Credentials.Expiration.toISOString(),
     });
-  }
+  },
 };
