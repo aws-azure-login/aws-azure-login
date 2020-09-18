@@ -69,5 +69,3 @@ jobs:
           snapcraft login --with snapcraft-login
           snapcraft
           snapcraft push *.snap --release stable
-        env:
-          SNAPCRAFT_BUILD_ENVIRONMENT: host
