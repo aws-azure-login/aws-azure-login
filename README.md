@@ -9,13 +9,13 @@ If your organization uses [Azure Active Directory](https://azure.microsoft.com) 
 
 ### Windows
 
-Install [Node.js](https://nodejs.org/) v7.6.0 or higher. Then install aws-azure-login with npm:
+Install [Node.js](https://nodejs.org/) v12 or higher. Then install aws-azure-login with npm:
 
     npm install -g aws-azure-login
 
 ### Linux
 
-In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v7.6.0 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions.
+In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v12 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions.
 
 #### Option A: Install for All Users
 
