@@ -57,6 +57,10 @@ You can also put the docker-launch.sh script into your bin directory for the aws
 
 Now just run `aws-azure-login`.
 
+### Snap
+
+https://snapcraft.io/aws-azure-login
+
 ## Usage
 
 ### Configuration
