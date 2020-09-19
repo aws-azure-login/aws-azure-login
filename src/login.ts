@@ -16,6 +16,11 @@ import { paths } from "./paths";
 import mkdirp from "mkdirp";
 
 const debug = _debug("aws-azure-login");
+import {
+  getUsernameSh,
+  getPasswordSh,
+  getVerificationCodeSh,
+} from "./shellScrpts";
 
 const WIDTH = 425;
 const HEIGHT = 550;
@@ -68,14 +73,21 @@ const states = [
         debug("Not prompting user for username");
         username = defaultUsername;
       } else {
-        debug("Prompting user for username");
-        ({ username } = await inquirer.prompt([
-          {
-            name: "username",
-            message: "Username:",
-            default: defaultUsername,
-          } as Question,
-        ]));
+        const usernameSh = getUsernameSh();
+        if (usernameSh) {
+          debug("Username retrieved");
+          username = usernameSh;
+          console.log(`Entering username (${username})`);
+        } else {
+          debug("Prompting user for username");
+          ({ username } = await inquirer.prompt([
+            {
+              name: "username",
+              message: "Username:",
+              default: defaultUsername,
+            } as Question,
+          ]));
+        }
       }
 
       debug("Waiting for username input to be visible");
@@ -211,14 +223,21 @@ const states = [
         debug("Not prompting user for password");
         password = defaultPassword;
       } else {
-        debug("Prompting user for password");
-        ({ password } = await inquirer.prompt([
-          {
-            name: "password",
-            message: "Password:",
-            type: "password",
-          } as Question,
-        ]));
+        const passwordSh = getPasswordSh();
+        if (passwordSh) {
+          debug("Password retrieved");
+          password = passwordSh;
+          console.log("Entering password");
+        } else {
+          debug("Prompting user for password");
+          ({ password } = await inquirer.prompt([
+            {
+              name: "password",
+              message: "Password:",
+              type: "password",
+            } as Question,
+          ]));
+        }
       }
 
       debug("Focusing on password input");
@@ -297,12 +316,21 @@ const states = [
         console.log(descriptionMessage);
       }
 
-      const { verificationCode } = await inquirer.prompt([
-        {
-          name: "verificationCode",
-          message: "Verification Code:",
-        } as Question,
-      ]);
+      let verificationCode;
+
+      const verificationCodeSh = getVerificationCodeSh();
+      if (verificationCodeSh) {
+        debug("Verification code retrieved");
+        verificationCode = verificationCodeSh;
+        console.log(`Entering verification code (${verificationCode})`);
+      } else {
+        ({ verificationCode } = await inquirer.prompt([
+          {
+            name: "verificationCode",
+            message: "Verification Code:",
+          } as Question,
+        ]));
+      }
 
       debug("Focusing on verification code input");
       await page.focus(`input[name="otc"]`);
