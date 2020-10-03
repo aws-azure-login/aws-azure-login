@@ -31,6 +31,12 @@ const AWS_GOV_SAML_ENDPOINT = "https://signin.amazonaws-us-gov.com/saml";
 interface Role {
   roleArn: string;
   principalArn: string;
+  accountAlias: string;
+}
+
+interface LoginResult {
+  samlResponse: string;
+  accountMappings: Map<string, string>;
 }
 
 /**
@@ -416,7 +422,7 @@ export const login = {
       profile.azure_tenant_id,
       assertionConsumerServiceURL
     );
-    const samlResponse = await this._performLoginAsync(
+    const { samlResponse, accountMappings } = await this._performLoginAsync(
       loginUrl,
       headless,
       disableSandbox,
@@ -429,7 +435,10 @@ export const login = {
       profile.azure_default_remember_me,
       noDisableExtensions
     );
-    const roles = this._parseRolesFromSamlResponse(samlResponse);
+    const roles = this._parseRolesFromSamlResponse(
+      samlResponse,
+      accountMappings
+    );
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
       roles,
       noPrompt,
@@ -613,7 +622,7 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
     noDisableExtensions: boolean
-  ): Promise<string> {
+  ): Promise<LoginResult> {
     debug("Loading login page in Chrome");
 
     let browser: puppeteer.Browser | undefined;
@@ -651,8 +660,10 @@ export const login = {
       const page = pages[0];
       await page.setViewport({ width: WIDTH - 15, height: HEIGHT - 35 });
 
-      // Prevent redirection to AWS
       let samlResponseData;
+      let accountsScraped = false;
+      const accountMappings = new Map<string, string>();
+
       const samlResponsePromise = new Promise((resolve) => {
         page.on("request", (req) => {
           const reqURL = req.url();
@@ -662,23 +673,47 @@ export const login = {
             reqURL === AWS_GOV_SAML_ENDPOINT ||
             reqURL === AWS_CN_SAML_ENDPOINT
           ) {
-            resolve();
             samlResponseData = req.postData();
+          }
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
+          req.continue();
+        });
+
+        page.on("response", (res) => {
+          const resURL = res.url();
+          if (
+            resURL === AWS_SAML_ENDPOINT ||
+            resURL === AWS_GOV_SAML_ENDPOINT ||
+            resURL === AWS_CN_SAML_ENDPOINT
+          ) {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            req.respond({
-              status: 200,
-              contentType: "text/plain",
-              body: "",
+            res.text().then((text) => {
+              if (text) {
+                const doc = cheerio.load(text);
+                const re = /Account:\s+(?<alias>[a-z0-9-]+)\s+\((?<accountId>\d+)\)/;
+                const accounts = doc("div.saml-account-name")
+                  .map((i, el) => doc(el).text())
+                  .get();
+                accounts.forEach((account: string) => {
+                  const match = re.exec(account);
+                  if (match && match.groups) {
+                    accountMappings.set(
+                      match.groups["accountId"],
+                      match.groups["alias"]
+                    );
+                  }
+                });
+              }
+              accountsScraped = true;
+
+              if (browser) {
+                // eslint-disable-next-line @typescript-eslint/no-floating-promises
+                browser.close();
+              }
+              resolve();
+              browser = undefined;
+              debug(`Console login page scraped, browser closed`);
             });
-            if (browser) {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              browser.close();
-            }
-            browser = undefined;
-            debug(`Received SAML response, browser closed`);
-          } else {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            req.continue();
           }
         });
       });
@@ -706,7 +741,7 @@ export const login = {
         let totalUnrecognizedDelay = 0;
         // eslint-disable-next-line no-constant-condition
         while (true) {
-          if (samlResponseData) break;
+          if (samlResponseData && accountsScraped) break;
 
           let foundState = false;
           for (let i = 0; i < states.length; i++) {
@@ -785,7 +820,7 @@ export const login = {
         throw new Error("SAML can't be an array");
       }
 
-      return samlResponse;
+      return { samlResponse, accountMappings };
     } finally {
       if (browser) {
         await browser.close();
@@ -799,7 +834,10 @@ export const login = {
    * @returns {Array.<{roleArn: string, principalArn: string}>} The roles
    * @private
    */
-  _parseRolesFromSamlResponse(assertion: string): Role[] {
+  _parseRolesFromSamlResponse(
+    assertion: string,
+    accountMappings: Map<string, string>
+  ): Role[] {
     debug("Converting assertion from base64 to ASCII");
     const samlText = Buffer.from(assertion, "base64").toString("ascii");
     debug("Converted", samlText);
@@ -824,7 +862,9 @@ export const login = {
           : [1, 0];
         const roleArn = parts[roleIdx].trim();
         const principalArn = parts[principalIdx].trim();
-        return { roleArn, principalArn };
+        const accountId = roleArn.split(":")[4];
+        const accountAlias = accountMappings.get(accountId) || "";
+        return { roleArn, principalArn, accountAlias };
       })
       .get();
     debug("Found roles", roles);
@@ -870,7 +910,15 @@ export const login = {
           name: "role",
           message: "Role:",
           type: "list",
-          choices: _.sortBy(_.map(roles, "roleArn")),
+          choices: _.sortBy(
+            _.map(roles, (role) => {
+              const { roleArn, accountAlias } = role;
+              if (accountAlias) {
+                return `${roleArn} (${accountAlias})`;
+              }
+              return roleArn;
+            })
+          ),
           default: defaultRoleArn,
         });
       }
@@ -896,6 +944,7 @@ export const login = {
     // user is logged in and using multiple profiles --all-profiles and --no-prompt
     if (questions.length > 0) {
       const answers = await inquirer.prompt(questions);
+      answers.role = (answers.role as string).split(" ")[0];
       if (!role) role = _.find(roles, ["roleArn", answers.role]);
       if (answers.durationHours) {
         durationHours = parseInt(answers.durationHours as string, 10);
