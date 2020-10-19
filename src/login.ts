@@ -227,6 +227,9 @@ const states = [
       debug("Typing password");
       await page.keyboard.type(password);
 
+      // federation with on-prem ADFS causes an HTTP basic auth prompt inside a redirect here
+      await page.authenticate({'username': username, 'password': password});
+
       debug("Submitting form");
       await page.click("span[class=submit],input[type=submit]");
 
