@@ -33,6 +33,9 @@ interface Role {
   principalArn: string;
 }
 
+// eslint-disable-next-line no-var
+var username: string;
+
 /**
  * To proxy the input/output of the Azure login page, it's easiest to run a loop that
  * monitors the state of the page and then perform the corresponding CLI behavior.
@@ -61,8 +64,6 @@ const states = [
         );
         console.log(errorMessage);
       }
-
-      let username;
 
       if (noPrompt && defaultUsername) {
         debug("Not prompting user for username");
