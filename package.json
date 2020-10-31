@@ -3,10 +3,10 @@
   "version": "3.0.3",
   "description": "Use Azure AD SSO to log into the AWS CLI.",
   "main": "index.js",
-  "contributors": [
-    "Dave T. Johnson <dave@dtjohnson.net>",
-    "Kenneth Aasan (https://github.com/kennethaasan)"
-  ],
+  "author": {
+    "name": "Kenneth Aasan",
+    "url": "https://github.com/kennethaasan"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
