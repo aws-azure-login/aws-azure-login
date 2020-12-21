@@ -41,12 +41,14 @@ RUN apt-get update \
    lsb-release \
    xdg-utils \
    wget \
+   chromium-browser \
    && apt-get -q -y clean \
    && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
 COPY package.json package-lock.json /aws-azure-login/
 
-RUN npm install --production
+RUN cd /aws-azure-login && \
+    npm install --production
 
 COPY lib /aws-azure-login/lib
 
