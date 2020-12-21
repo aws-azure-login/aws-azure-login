@@ -46,8 +46,7 @@ RUN apt-get update \
 
 COPY package.json package-lock.json /aws-azure-login/
 
-RUN cd /aws-azure-login \
-   && npm install --production
+RUN npm install --production
 
 COPY lib /aws-azure-login/lib
 
