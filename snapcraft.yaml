@@ -12,7 +12,7 @@ confinement: strict
 parts:
   aws-azure-login:
     plugin: nodejs
-    nodejs-version: "12.18.4"
+    nodejs-version: "14.15.4"
     nodejs-package-manager: npm
     source: .
 
