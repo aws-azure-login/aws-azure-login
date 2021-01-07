@@ -662,7 +662,7 @@ export const login = {
             reqURL === AWS_GOV_SAML_ENDPOINT ||
             reqURL === AWS_CN_SAML_ENDPOINT
           ) {
-            resolve();
+            resolve(undefined);
             samlResponseData = req.postData();
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             req.respond({

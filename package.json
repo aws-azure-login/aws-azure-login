@@ -33,7 +33,7 @@
     "cheerio": "1.0.0-rc.5",
     "commander": "^6.2.1",
     "debug": "^4.3.1",
-    "ini": "^1.3.5",
+    "ini": "^2.0.0",
     "inquirer": "^7.3.3",
     "lodash": "^4.17.20",
     "mkdirp": "^1.0.4",
@@ -50,14 +50,14 @@
     "@types/lodash": "^4.14.167",
     "@types/mkdirp": "^1.0.1",
     "@types/node": "^14.14.20",
-    "@types/puppeteer": "^3.0.4",
+    "@types/puppeteer": "^5.4.2",
     "@types/uuid": "^8.3.0",
-    "@typescript-eslint/eslint-plugin": "^3.8.0",
-    "@typescript-eslint/parser": "^3.8.0",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
     "eslint": "^7.17.0",
-    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-prettier": "^7.1.0",
     "prettier": "^2.2.1",
     "ts-node-dev": "^1.1.1",
-    "typescript": "^3.9.7"
+    "typescript": "^4.1.3"
   }
 }
