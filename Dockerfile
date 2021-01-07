@@ -44,7 +44,7 @@ RUN apt-get update \
    && apt-get -q -y clean \
    && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
-COPY package.json package-lock.json /aws-azure-login/
+COPY package.json yarn.lock /aws-azure-login/
 
 RUN cd /aws-azure-login \
    && yarn install --production
