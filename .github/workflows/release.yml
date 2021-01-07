@@ -13,9 +13,9 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
+      - run: yarn install
+      - run: yarn test
+      - run: yarn build
       - uses: actions/upload-artifact@v2
         with:
           name: lib
