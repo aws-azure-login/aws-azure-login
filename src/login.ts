@@ -634,6 +634,11 @@ export const login = {
         await mkdirp(paths.chromium);
         args.push(`--user-data-dir=${paths.chromium}`);
       }
+
+      if (process.env.https_proxy) {
+        args.push(`--proxy-server=${process.env.https_proxy}`);
+      }
+
       const ignoreDefaultArgs = noDisableExtensions
         ? ["--disable-extensions"]
         : [];
