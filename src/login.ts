@@ -384,7 +384,8 @@ export const login = {
     enableChromeNetworkService: boolean,
     awsNoVerifySsl: boolean,
     enableChromeSeamlessSso: boolean,
-    noDisableExtensions: boolean
+    noDisableExtensions: boolean,
+    puppeteerNoVerifySSL: boolean
   ): Promise<void> {
     let headless, cliProxy;
     if (mode === "cli") {
@@ -427,7 +428,8 @@ export const login = {
       profile.azure_default_password,
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
-      noDisableExtensions
+      noDisableExtensions,
+      puppeteerNoVerifySSL
     );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
@@ -454,7 +456,8 @@ export const login = {
     awsNoVerifySsl: boolean,
     enableChromeSeamlessSso: boolean,
     forceRefresh: boolean,
-    noDisableExtensions: boolean
+    noDisableExtensions: boolean,
+    puppeteerNoVerifySSL: boolean
   ): Promise<void> {
     const profiles = await awsConfig.getAllProfileNames();
 
@@ -481,7 +484,8 @@ export const login = {
         enableChromeNetworkService,
         awsNoVerifySsl,
         enableChromeSeamlessSso,
-        noDisableExtensions
+        noDisableExtensions,
+        puppeteerNoVerifySSL
       );
     }
   },
@@ -598,6 +602,7 @@ export const login = {
    * @param {bool} [enableChromeSeamlessSso] - chrome seamless SSO
    * @param {bool} [rememberMe] - Enable remembering the session
    * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
+   * @param {bool} [puppeteerNoVerifySSL] - True to prevent Puppeteer from verifying SSL certificates
    * @returns {Promise.<string>} The SAML response.
    * @private
    */
@@ -612,7 +617,8 @@ export const login = {
     defaultPassword: string | undefined,
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
-    noDisableExtensions: boolean
+    noDisableExtensions: boolean,
+    puppeteerNoVerifySSL: boolean
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
@@ -643,7 +649,11 @@ export const login = {
         ? ["--disable-extensions"]
         : [];
 
+      if (puppeteerNoVerifySSL) {
+        args.push('--ignore-certificate-errors');
+      }
       browser = await puppeteer.launch({
+        ignoreHTTPSErrors: puppeteerNoVerifySSL ? true : false,
         headless,
         args,
         ignoreDefaultArgs,

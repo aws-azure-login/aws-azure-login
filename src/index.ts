@@ -49,6 +49,10 @@ program
     "--no-disable-extensions",
     "Tell Puppeteer not to pass the --disable-extensions flag to Chromium"
   )
+  .option(
+    "--no-verify-ssl-puppeteer",
+    "Tell Puppeteer not verify SSL certificates"
+  )
   .parse(process.argv);
 
 const profileName =
@@ -63,6 +67,7 @@ const awsNoVerifySsl = !program.verifySsl;
 const enableChromeSeamlessSso = !!program.enableChromeSeamlessSso;
 const forceRefresh = !!program.forceRefresh;
 const noDisableExtensions = !program.disableExtensions;
+const puppeteerNoVerifySSL = !program.verifySslPuppeteer;
 
 Promise.resolve()
   .then(() => {
@@ -75,7 +80,8 @@ Promise.resolve()
         awsNoVerifySsl,
         enableChromeSeamlessSso,
         forceRefresh,
-        noDisableExtensions
+        noDisableExtensions,
+        puppeteerNoVerifySSL
       );
     }
 
@@ -88,7 +94,8 @@ Promise.resolve()
       enableChromeNetworkService,
       awsNoVerifySsl,
       enableChromeSeamlessSso,
-      noDisableExtensions
+      noDisableExtensions,
+      puppeteerNoVerifySSL
     );
   })
   .catch((err: Error) => {
