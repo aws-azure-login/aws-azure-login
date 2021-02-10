@@ -51,7 +51,7 @@ program
   )
   .option(
     "--no-verify-ssl-puppeteer",
-    "Tell Puppeteer not verify SSL certificates"
+    "Tell Puppeteer not to verify SSL certificates"
   )
   .parse(process.argv);
 
