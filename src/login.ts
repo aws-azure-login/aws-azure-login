@@ -650,7 +650,7 @@ export const login = {
         : [];
 
       if (puppeteerNoVerifySSL) {
-        args.push('--ignore-certificate-errors');
+        args.push("--ignore-certificate-errors");
       }
       browser = await puppeteer.launch({
         ignoreHTTPSErrors: puppeteerNoVerifySSL ? true : false,
