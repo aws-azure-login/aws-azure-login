@@ -59,5 +59,13 @@
     "prettier": "^2.2.1",
     "ts-node-dev": "^1.1.1",
     "typescript": "^4.1.3"
+  },
+  "pkg": {
+    "scripts": [
+        "./lib/*.js"
+     ],
+    "assets": [
+      "./node_modules/*"
+    ]
   }
 }
