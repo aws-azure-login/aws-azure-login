@@ -61,6 +61,17 @@ Now just run `aws-azure-login`.
 
 https://snapcraft.io/aws-azure-login
 
+### Packaging as a standalone executable
+
+A standalone executable can be built for Windows, macOS, and Linux using the `pkg` command:
+
+    npm install pkg -g
+    yarn
+    yarn build
+    pkg .
+
+This is useful for deploying the tool in environments with restricted Internet access.
+
 ## Usage
 
 ### Configuration
