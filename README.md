@@ -7,6 +7,7 @@ If your organization uses [Azure Active Directory](https://azure.microsoft.com) 
 
 ## Installation
 
+Installation can be done in any of the following platform - Windows, Linux, Docker, Snap
 ### Windows
 
 Install [Node.js](https://nodejs.org/) v12 or higher. Then install aws-azure-login with npm:
@@ -52,7 +53,7 @@ The Docker image is configured with an entrypoint so you can just feed any argum
 
 You can also put the docker-launch.sh script into your bin directory for the aws-azure-login command to function as usual:
 
-    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/sportradar/aws-azure-login/main/docker-launch.sh
+    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/sportradar/aws-azure-login/main/docker-launch.sh -L
     sudo chmod o+x /usr/local/bin/aws-azure-login
 
 Now just run `aws-azure-login`.

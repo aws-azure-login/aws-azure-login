@@ -641,6 +641,11 @@ export const login = {
         await mkdirp(paths.chromium);
         args.push(`--user-data-dir=${paths.chromium}`);
       }
+
+      if (process.env.https_proxy) {
+        args.push(`--proxy-server=${process.env.https_proxy}`);
+      }
+
       const ignoreDefaultArgs = noDisableExtensions
         ? ["--disable-extensions"]
         : [];
@@ -669,7 +674,7 @@ export const login = {
             reqURL === AWS_GOV_SAML_ENDPOINT ||
             reqURL === AWS_CN_SAML_ENDPOINT
           ) {
-            resolve();
+            resolve(undefined);
             samlResponseData = req.postData();
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             req.respond({
