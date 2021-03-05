@@ -793,6 +793,28 @@ export const login = {
 
               debug(`Finished state: ${state.name}`);
 
+              debug("Checking if user has configured support for ADFS authentication prompt...");
+              if (expecting_adfs_prompt) {
+                username = defaultUsername;
+                if (defaultPassword == "") {
+                  ({ password } = await inquirer.prompt([
+                    {
+                      name: "password",
+                      message: "Password:",
+                      type: "password",
+                    } as Question,
+                  ]));
+                }
+
+                await page.authenticate({
+                  username,
+                  password,
+                });
+
+                debug("ADFS authentication prompt recognised!")
+              } else {
+                debug("ADFS authentication prompt support not configured.")
+              }
               break;
             }
           }
