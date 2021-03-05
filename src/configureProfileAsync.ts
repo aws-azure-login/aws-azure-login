@@ -66,6 +66,7 @@ export async function configureProfileAsync(
     azure_default_role_arn: answers.defaultRoleArn as string,
     azure_default_duration_hours: answers.defaultDurationHours as string,
     azure_default_remember_me: (answers.rememberMe as string) === "true",
+    azure_expecting_adfs_prompt: answers.expecting_adfs_prompt as boolean,
   });
 
   console.log("Profile saved.");
