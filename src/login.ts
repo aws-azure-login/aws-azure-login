@@ -33,8 +33,9 @@ interface Role {
   principalArn: string;
 }
 
-// eslint-disable-next-line no-var
-var username: string;
+// Auth
+let username: string;
+let password: string;
 
 /**
  * To proxy the input/output of the Azure login page, it's easiest to run a loop that
