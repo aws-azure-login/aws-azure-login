@@ -378,7 +378,6 @@ const states = [
     selector: "#error-information-popup-container",
     async handler(
       page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
     ): Promise<void> {
       debug("Chrome exception")
       const errorMessage = await page.evaluate(
