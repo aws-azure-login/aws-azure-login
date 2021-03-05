@@ -207,8 +207,6 @@ const states = [
         defaultPassword = ""; // Password error. Unset the default and allow user to enter it.
       }
 
-      let password;
-
       if (noPrompt && defaultPassword) {
         debug("Not prompting user for password");
         password = defaultPassword;
