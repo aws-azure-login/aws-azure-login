@@ -633,6 +633,7 @@ export const login = {
    * @param {bool} [enableChromeSeamlessSso] - chrome seamless SSO
    * @param {bool} [rememberMe] - Enable remembering the session
    * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
+   * @param {bool} [expecting_adfs_prompt] - True to support an expected ADFS basic Auth prompt
    * @returns {Promise.<string>} The SAML response.
    * @private
    */
