@@ -21,6 +21,7 @@
   },
   "scripts": {
     "start": "ts-node-dev src/index.ts",
+    "debug": "env DEBUG=\"aws-azure-login\" env DEBUG_COLORS=true ts-node-dev src/index.ts",
     "build": "tsc",
     "watch": "tsc -w",
     "eslint": "eslint . --ext .ts",
