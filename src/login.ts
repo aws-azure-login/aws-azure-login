@@ -381,6 +381,40 @@ const states = [
       throw new CLIError(descriptionMessage);
     },
   },
+  {
+    name: "Chrome exception",
+    selector: "#error-information-popup-container",
+    async handler(
+      page: puppeteer.Page,
+      selected: puppeteer.ElementHandle
+    ): Promise<void> {
+      debug("Chrome exception")
+      const errorMessage = await page.evaluate(
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        () => document.querySelector(".error-code").textContent
+      ) || "Unable to find `error-code` on page.";
+      debug(errorMessage)
+
+      const path = "aws-azure-login-unrecognized-chrome-exception.png";
+
+      let descriptiveError: string;
+      switch (errorMessage) {
+        case "HTTP ERROR 401":
+          descriptiveError = "Failed to authenticate. Invalid username/password combination."
+          break;
+        case "Unable to find `error-code` on page.":
+          await page.screenshot({ path });
+          throw new CLIError(
+            `Unable to recognize chrome exception! A screenshot has been dumped to ${path}. If this problem persists, try running with --mode=gui or --mode=debug`
+          );
+        default:
+          descriptiveError = "Unable to find the error on the page."
+      }
+
+      throw new CLIError(descriptiveError);
+    },
+  },
 ];
 
 export const login = {
