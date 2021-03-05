@@ -648,7 +648,8 @@ export const login = {
     defaultPassword: string | undefined,
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
-    noDisableExtensions: boolean
+    noDisableExtensions: boolean,
+    expecting_adfs_prompt: boolean
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
