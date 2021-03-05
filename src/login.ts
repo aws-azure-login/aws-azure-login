@@ -34,8 +34,8 @@ interface Role {
 }
 
 // Auth
-let username: string;
-let password: string;
+let USERNAME: string;
+let PASSWORD: string;
 
 /**
  * To proxy the input/output of the Azure login page, it's easiest to run a loop that
@@ -52,7 +52,9 @@ const states = [
       page: puppeteer.Page,
       _selected: puppeteer.ElementHandle,
       noPrompt: boolean,
-      defaultUsername: string
+      defaultUsername: string,
+      defaultPassword: string,
+      expecting_adfs_prompt: boolean
     ): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
@@ -66,6 +68,7 @@ const states = [
         console.log(errorMessage);
       }
 
+      let username: string;
       if (noPrompt && defaultUsername) {
         debug("Not prompting user for username");
         username = defaultUsername;
@@ -78,6 +81,32 @@ const states = [
             default: defaultUsername,
           } as Question,
         ]));
+      }
+      // Export globally
+      USERNAME = username
+
+      if (expecting_adfs_prompt) {
+        // Get password from INPUT
+        // If ADFS is expected, the user will never enter the `password input` state
+        if (noPrompt && defaultPassword) {
+          debug("Not prompting user for password");
+          // Export globally
+          PASSWORD = defaultPassword
+        } else {
+          debug("Prompting user for password");
+          const p = await inquirer.prompt([
+            {
+              name: "password",
+              message: "Password:",
+              type: "password",
+              default: defaultPassword,
+            } as Question,
+          ]);
+          // Export globally
+          PASSWORD = p.password as string
+        }
+      } else {
+        debug(`expecting_adfs_prompt: ${expecting_adfs_prompt}`)
       }
 
       debug("Waiting for username input to be visible");
@@ -207,6 +236,7 @@ const states = [
         defaultPassword = ""; // Password error. Unset the default and allow user to enter it.
       }
 
+      let password: string;
       if (noPrompt && defaultPassword) {
         debug("Not prompting user for password");
         password = defaultPassword;
@@ -781,34 +811,29 @@ export const login = {
                   noPrompt,
                   defaultUsername,
                   defaultPassword,
-                  rememberMe
+                  rememberMe,
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  expecting_adfs_prompt
                 ),
               ]);
 
               debug(`Finished state: ${state.name}`);
 
-              debug("Checking if user has configured support for ADFS authentication prompt...");
-              if (expecting_adfs_prompt) {
-                username = defaultUsername;
-                if (defaultPassword == "") {
-                  ({ password } = await inquirer.prompt([
-                    {
-                      name: "password",
-                      message: "Password:",
-                      type: "password",
-                    } as Question,
-                  ]));
+              // If username input went through successfully, check if an ADFS authentication prompt is expected.
+              if (state.name == "username input"){
+                debug("Checking if user is expecting an ADFS authentication prompt...");
+                if (expecting_adfs_prompt) {
+                  debug(USERNAME, PASSWORD)
+                  // void await page.authenticate({
+                  await page.authenticate({
+                    username: USERNAME,
+                    password: PASSWORD
+                  })
                 }
-
-                await page.authenticate({
-                  username,
-                  password,
-                });
-
-                debug("ADFS authentication prompt recognised!")
-              } else {
-                debug("ADFS authentication prompt support not configured.")
-              }
+                } else {
+                  debug("Skipping ADFS authentication support: not configured.")
+                }
               break;
             }
           }
