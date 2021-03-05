@@ -461,8 +461,9 @@ export const login = {
       profile.azure_default_password,
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
-      noDisableExtensions
-    );
+      noDisableExtensions,
+      profile.azure_expecting_adfs_prompt
+  );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
       roles,
