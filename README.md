@@ -155,6 +155,39 @@ _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome
 
 If behind corporate proxy, then just set https_proxy env variable.
 
+### ADFS
+
+If your Azure AD uses ADFS, use the following configuration:
+
+```
+# ~/.aws/config
+[profile foo]
+adfs_prompt_expected=true
+```
+
+If your ADFS uses a different username to your Azure username, use the following configuration:
+
+Example Azure username:
+`foo.bar@acme.com`
+
+```
+# ~/.aws/config
+[profile foo]
+adfs_prompt_expected=true
+adfs_username=foo_bar
+```
+
+If you would like to fully automate your ADFS sign in, use the following configuration:
+
+```
+# ~/.aws/config
+[profile foo]
+azure_default_username=foo.bar@acme.com
+azure_default_password=sUp3RS3CR3tP422W0Rd!
+adfs_prompt_expected=true
+adfs_username=foo_bar # optional!
+```
+
 ## Automation
 
 ### Renew credentials for all configured profiles
