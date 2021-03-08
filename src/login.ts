@@ -91,7 +91,7 @@ const states = [
         ]));
       }
       // Export locally
-      USERNAME = username
+      USERNAME = username;
 
       if (ADFS_PROMPT_EXPECTED) {
         /**
@@ -101,7 +101,7 @@ const states = [
         if (noPrompt && defaultPassword) {
           debug("Not prompting user for password");
           // Export locally
-          PASSWORD = defaultPassword
+          PASSWORD = defaultPassword;
         } else {
           debug("Prompting user for password");
           const p = await inquirer.prompt([
@@ -113,11 +113,11 @@ const states = [
             } as Question,
           ]);
           // Export locally
-          PASSWORD = p.password as string
+          PASSWORD = p.password as string;
         }
       } else {
         // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        debug(`expecting_adfs_prompt: ${ADFS_PROMPT_EXPECTED}`)
+        debug(`expecting_adfs_prompt: ${ADFS_PROMPT_EXPECTED}`);
       }
 
       debug("Waiting for username input to be visible");
@@ -417,23 +417,23 @@ const states = [
   {
     name: "Chrome exception",
     selector: "#error-information-popup-container",
-    async handler(
-      page: puppeteer.Page,
-    ): Promise<void> {
-      debug("Chrome exception")
-      const errorMessage = await page.evaluate(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        () => document.querySelector(".error-code").textContent
-      ) || "Unable to find `error-code` on page.";
-      debug(errorMessage)
+    async handler(page: puppeteer.Page): Promise<void> {
+      debug("Chrome exception");
+      const errorMessage =
+        (await page.evaluate(
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          () => document.querySelector(".error-code").textContent
+        )) || "Unable to find `error-code` on page.";
+      debug(errorMessage);
 
       const path = "aws-azure-login-unrecognized-chrome-exception.png";
 
       let descriptiveError: string;
       switch (errorMessage) {
         case "HTTP ERROR 401":
-          descriptiveError = "Failed to authenticate. Invalid username/password combination."
+          descriptiveError =
+            "Failed to authenticate. Invalid username/password combination.";
           break;
         case "Unable to find `error-code` on page.":
           await page.screenshot({ path });
@@ -441,7 +441,7 @@ const states = [
             `Unable to recognize chrome exception! A screenshot has been dumped to ${path}. If this problem persists, try running with --mode=gui or --mode=debug`
           );
         default:
-          descriptiveError = "Unable to find the error on the page."
+          descriptiveError = "Unable to find the error on the page.";
       }
 
       throw new CLIError(descriptiveError);
@@ -503,7 +503,7 @@ export const login = {
       profile.azure_default_remember_me,
       noDisableExtensions,
       profile.adfs_prompt_expected as boolean,
-      profile.adfs_username as string,
+      profile.adfs_username as string
     );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
@@ -632,6 +632,7 @@ export const login = {
     debug("Generating UUID for SAML request");
     const id = v4();
 
+    // noinspection CheckTagEmptyBody
     const samlRequest = `
         <samlp:AuthnRequest xmlns="urn:oasis:names:tc:SAML:2.0:metadata" ID="id${id}" Version="2.0" IssueInstant="${new Date().toISOString()}" IsPassive="false" AssertionConsumerServiceURL="${assertionConsumerServiceURL}" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
             <Issuer xmlns="urn:oasis:names:tc:SAML:2.0:assertion">${appIdUri}</Issuer>
@@ -787,7 +788,7 @@ export const login = {
         if (err instanceof Error) {
           // An error will be thrown if you're still logged in cause the page.goto ot waitForNavigation
           // will be a redirect to AWS. That's usually OK
-          debug(`Error occured during loading the first page: ${err.message}`);
+          debug(`Error occurred during loading the first page: ${err.message}`);
         }
       }
 
@@ -837,7 +838,9 @@ export const login = {
 
               // If `username input` state was successful, check if an ADFS authentication prompt is expected.
               if (state.name == "username input") {
-                debug("Checking if user is expecting an ADFS authentication prompt...");
+                debug(
+                  "Checking if user is expecting an ADFS authentication prompt..."
+                );
                 if (ADFS_PROMPT_EXPECTED) {
                   debug("Expecting ADFS authentication prompt.");
 
@@ -851,11 +854,13 @@ export const login = {
 
                   await page.authenticate({
                     username: u,
-                    password: PASSWORD
-                  })
+                    password: PASSWORD,
+                  });
                 }
               } else {
-                debug("Skipping ADFS authentication support: not configured in AWS config.")
+                debug(
+                  "Skipping ADFS authentication support: not configured in AWS config."
+                );
               }
               break;
             }
