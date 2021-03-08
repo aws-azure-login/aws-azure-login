@@ -21,7 +21,8 @@ export interface ProfileConfig {
   azure_default_duration_hours: string;
   region?: string;
   azure_default_remember_me: boolean;
-  azure_expecting_adfs_prompt: boolean;
+  adfs_prompt_expected?: boolean;
+  adfs_username?: string;
   [key: string]: unknown;
 }
 

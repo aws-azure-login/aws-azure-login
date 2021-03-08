@@ -33,7 +33,16 @@ interface Role {
   principalArn: string;
 }
 
-// Auth
+// Toggle if ADFS is part of the SSO process.
+let ADFS_PROMPT_EXPECTED: boolean;
+
+/**
+ * ADFS systems' USERNAME field can be different to the Azure AD USERNAME field.
+ * USERNAME = `foo.bar@acme.com`
+ * ADFS_USERNAME = `foo_bar`
+ */
+let ADFS_USERNAME: string;
+
 let USERNAME: string;
 let PASSWORD: string;
 
@@ -53,8 +62,7 @@ const states = [
       _selected: puppeteer.ElementHandle,
       noPrompt: boolean,
       defaultUsername: string,
-      defaultPassword: string,
-      expecting_adfs_prompt: boolean
+      defaultPassword: string
     ): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
@@ -82,15 +90,17 @@ const states = [
           } as Question,
         ]));
       }
-      // Export globally
+      // Export locally
       USERNAME = username
 
-      if (expecting_adfs_prompt) {
-        // Get password from INPUT
-        // If ADFS is expected, the user will never enter the `password input` state
+      if (ADFS_PROMPT_EXPECTED) {
+        /**
+         * Get password from stdin, if ADFS_PROMPT_EXPECTED and defaultPassword is unset.
+         * The user will never enter the `password input` state so it must be set here.
+         */
         if (noPrompt && defaultPassword) {
           debug("Not prompting user for password");
-          // Export globally
+          // Export locally
           PASSWORD = defaultPassword
         } else {
           debug("Prompting user for password");
@@ -102,11 +112,12 @@ const states = [
               default: defaultPassword,
             } as Question,
           ]);
-          // Export globally
+          // Export locally
           PASSWORD = p.password as string
         }
       } else {
-        debug(`expecting_adfs_prompt: ${expecting_adfs_prompt}`)
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        debug(`expecting_adfs_prompt: ${ADFS_PROMPT_EXPECTED}`)
       }
 
       debug("Waiting for username input to be visible");
@@ -487,12 +498,13 @@ export const login = {
       noPrompt,
       enableChromeNetworkService,
       profile.azure_default_username,
-      profile.azure_default_password,
+      profile.azure_default_password as string,
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
       noDisableExtensions,
-      profile.azure_expecting_adfs_prompt
-  );
+      profile.adfs_prompt_expected as boolean,
+      profile.adfs_username as string,
+    );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
       roles,
@@ -662,7 +674,8 @@ export const login = {
    * @param {bool} [enableChromeSeamlessSso] - chrome seamless SSO
    * @param {bool} [rememberMe] - Enable remembering the session
    * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
-   * @param {bool} [expecting_adfs_prompt] - True to support an expected ADFS basic Auth prompt
+   * @param {bool} [adfsPromptExpected] - True to support an expected ADFS basic Auth prompt
+   * @param {string} [adfsUsername] - The username to use for ADFS basic Auth prompt
    * @returns {Promise.<string>} The SAML response.
    * @private
    */
@@ -674,15 +687,20 @@ export const login = {
     noPrompt: boolean,
     enableChromeNetworkService: boolean,
     defaultUsername: string,
-    defaultPassword: string | undefined,
+    defaultPassword: string,
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
     noDisableExtensions: boolean,
-    expecting_adfs_prompt: boolean
+    adfsPromptExpected: boolean,
+    adfsUsername: string
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
     let browser: puppeteer.Browser | undefined;
+
+    // Export locally
+    ADFS_PROMPT_EXPECTED = adfsPromptExpected;
+    ADFS_USERNAME = adfsUsername;
 
     try {
       const args = headless
@@ -811,29 +829,34 @@ export const login = {
                   noPrompt,
                   defaultUsername,
                   defaultPassword,
-                  rememberMe,
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  expecting_adfs_prompt
+                  rememberMe
                 ),
               ]);
 
               debug(`Finished state: ${state.name}`);
 
-              // If username input went through successfully, check if an ADFS authentication prompt is expected.
-              if (state.name == "username input"){
+              // If `username input` state was successful, check if an ADFS authentication prompt is expected.
+              if (state.name == "username input") {
                 debug("Checking if user is expecting an ADFS authentication prompt...");
-                if (expecting_adfs_prompt) {
-                  debug(USERNAME, PASSWORD)
-                  // void await page.authenticate({
+                if (ADFS_PROMPT_EXPECTED) {
+                  debug("Expecting ADFS authentication prompt.");
+
+                  // Switch ADFS Basic Auth Username if user has ADFS_USERNAME set.
+                  let u: string;
+                  if (typeof ADFS_USERNAME === null) {
+                    u = ADFS_USERNAME;
+                  } else {
+                    u = USERNAME;
+                  }
+
                   await page.authenticate({
-                    username: USERNAME,
+                    username: u,
                     password: PASSWORD
                   })
                 }
-                } else {
-                  debug("Skipping ADFS authentication support: not configured.")
-                }
+              } else {
+                debug("Skipping ADFS authentication support: not configured in AWS config.")
+              }
               break;
             }
           }
