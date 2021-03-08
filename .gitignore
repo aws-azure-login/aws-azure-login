@@ -2,6 +2,9 @@
 logs
 *.log
 
+# Puppeteer State Captures
+aws-azure-login-unrecognized-*.png
+
 # Runtime data
 pids
 *.pid
