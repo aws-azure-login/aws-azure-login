@@ -848,16 +848,16 @@ export const login = {
                 if (ADFS_PROMPT_EXPECTED) {
                   debug("Expecting ADFS authentication prompt.");
 
-                  // Switch ADFS Basic Auth Username if user has ADFS_USERNAME set.
-                  let u: string;
+                  // Switch ADFS Basic Auth username if user has ADFS_USERNAME set in their AWS Profile.
+                  let username: string;
                   if (typeof ADFS_USERNAME === null) {
-                    u = ADFS_USERNAME;
+                    username = ADFS_USERNAME;
                   } else {
-                    u = USERNAME;
+                    username = USERNAME;
                   }
 
                   await page.authenticate({
-                    username: u,
+                    username: username,
                     password: PASSWORD,
                   });
                 }
