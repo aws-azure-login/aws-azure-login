@@ -438,7 +438,11 @@ const states = [
         case "Unable to find `error-code` on page.":
           await page.screenshot({ path });
           throw new CLIError(
-            `Unable to recognize chrome exception! A screenshot has been dumped to ${path}. If this problem persists, try running with --mode=gui or --mode=debug`
+            `Unable to recognize Puppeteer's page state!
+  * A screenshot has been dumped to '${path}'
+  * If the screenshot is blank, try running with '--mode=debug'
+  * If this problem persists, try running with '--mode=gui'
+  * If your organisation uses ADFS, please read the 'ADFS' section in the README`
           );
         default:
           descriptiveError = "Unable to find the error on the page.";
