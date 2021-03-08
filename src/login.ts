@@ -20,7 +20,7 @@ const debug = _debug("aws-azure-login");
 const WIDTH = 425;
 const HEIGHT = 550;
 const DELAY_ON_UNRECOGNIZED_PAGE = 1000;
-const MAX_UNRECOGNIZED_PAGE_DELAY = 30 * 1000;
+const MAX_UNRECOGNIZED_PAGE_DELAY = 10 * 1000;
 
 // source: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sso-quick-start#google-chrome-all-platforms
 const AZURE_AD_SSO = "autologon.microsoftazuread-sso.com";
