@@ -5,7 +5,7 @@ import zlib from "zlib";
 import AWS from "aws-sdk";
 import cheerio from "cheerio";
 import { v4 } from "uuid";
-import puppeteer from "puppeteer";
+import puppeteer, { HTTPRequest } from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
@@ -659,7 +659,7 @@ export const login = {
       // Prevent redirection to AWS
       let samlResponseData;
       const samlResponsePromise = new Promise((resolve) => {
-        page.on("request", (req) => {
+        page.on("request", (req: HTTPRequest) => {
           const reqURL = req.url();
           debug(`Request: ${url}`);
           if (
@@ -673,6 +673,7 @@ export const login = {
             req.respond({
               status: 200,
               contentType: "text/plain",
+              headers: {},
               body: "",
             });
             if (browser) {
