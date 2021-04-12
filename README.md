@@ -72,7 +72,7 @@ To configure the aws-azure-login client run:
 
     aws-azure-login --configure
 
-You'll need your Azure Tenant ID and the App ID URI. To configure a named profile, use the --profile flag.
+You'll need your [Azure Tenant ID and the App ID URI](#getting-your-tenant-id-and-app-id-uri). To configure a named profile, use the --profile flag.
 
     aws-azure-login --configure --profile foo
 
