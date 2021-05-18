@@ -402,13 +402,15 @@ export const login = {
 
     const profile = await this._loadProfileAsync(profileName);
     let assertionConsumerServiceURL = AWS_SAML_ENDPOINT;
+    if (!profile.region) {
+      console.log("WARN: Default region has not been set with AWS config.");
+    }
     if (profile.region && profile.region.startsWith("us-gov")) {
       assertionConsumerServiceURL = AWS_GOV_SAML_ENDPOINT;
     }
     if (profile.region && profile.region.startsWith("cn-")) {
       assertionConsumerServiceURL = AWS_CN_SAML_ENDPOINT;
     }
-
     console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
 
     const loginUrl = await this._createLoginUrlAsync(
