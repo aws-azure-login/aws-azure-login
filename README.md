@@ -14,6 +14,10 @@ Install [Node.js](https://nodejs.org/) v12 or higher. Then install aws-azure-log
 
     npm install -g aws-azure-login
 
+You may need to install puppeteer dependency, if you're getting missing chrome or chromium message
+
+    node <node_modules_dir>/aws-azure-login/node_modules/puppeteer/install.js
+
 ### Linux
 
 In Linux you can either install for all users or just the current user. In either case, you must first install [Node.js](https://nodejs.org/) v12 or higher and any [puppeteer dependencies](https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch). Then follow the appropriate instructions.
@@ -181,7 +185,8 @@ Your Azure AD system admin should be able to provide you with your Tenant ID and
 5. Copy the SAMLRequest URL param.
 6. Paste it into a URL decoder ([like this one](https://www.samltool.com/url.php)) and decode.
 7. Paste the decoded output into the a SAML deflated and encoded XML decoder ([like this one](https://www.samltool.com/decode.php)).
-8. In the decoded XML output the value of the Issuer tag is the App ID URI.
+8. In the decoded XML output the value of the `Audience` tag is the App ID URI.
+9. You may double-check tenant ID using `Attribute` tag named `tenantid` provided in XML.
 
 ## How It Works
 
