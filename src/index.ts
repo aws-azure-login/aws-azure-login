@@ -51,22 +51,24 @@ program
   )
   .parse(process.argv);
 
+const options = program.opts()
+
 const profileName =
-  (program.profile as string | undefined) ||
+  (options.profile as string | undefined) ||
   process.env.AWS_PROFILE ||
   "default";
-const mode = (program.mode as string | undefined) || "cli";
-const disableSandbox = !program.sandbox;
-const noPrompt = !program.prompt;
-const enableChromeNetworkService = !!program.enableChromeNetworkService;
-const awsNoVerifySsl = !program.verifySsl;
-const enableChromeSeamlessSso = !!program.enableChromeSeamlessSso;
-const forceRefresh = !!program.forceRefresh;
-const noDisableExtensions = !program.disableExtensions;
+const mode = (options.mode as string | undefined) || "cli";
+const disableSandbox = !options.sandbox;
+const noPrompt = !options.prompt;
+const enableChromeNetworkService = !!options.enableChromeNetworkService;
+const awsNoVerifySsl = !options.verifySsl;
+const enableChromeSeamlessSso = !!options.enableChromeSeamlessSso;
+const forceRefresh = !!options.forceRefresh;
+const noDisableExtensions = !options.disableExtensions;
 
 Promise.resolve()
   .then(() => {
-    if (program.allProfiles) {
+    if (options.allProfiles) {
       return login.loginAll(
         mode,
         disableSandbox,
@@ -79,7 +81,7 @@ Promise.resolve()
       );
     }
 
-    if (program.configure) return configureProfileAsync(profileName);
+    if (options.configure) return configureProfileAsync(profileName);
     return login.loginAsync(
       profileName,
       mode,
