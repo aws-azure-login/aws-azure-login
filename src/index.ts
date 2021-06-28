@@ -51,7 +51,7 @@ program
   )
   .parse(process.argv);
 
-const options = program.opts()
+const options = program.opts();
 
 const profileName =
   (options.profile as string | undefined) ||
