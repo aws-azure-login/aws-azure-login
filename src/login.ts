@@ -78,7 +78,7 @@ const states = [
 
       debug("Waiting for a delay");
       await Bluebird.delay(500);
-    }
+    },
   },
   {
     name: "username input",
