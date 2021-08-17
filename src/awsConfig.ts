@@ -15,12 +15,12 @@ const refreshLimitInMs = 11 * 60 * 1000;
 export interface ProfileConfig {
   azure_tenant_id: string;
   azure_app_id_uri: string;
-  azure_default_username: string;
+  azure_default_username?: string;
   azure_default_password?: string;
-  azure_default_role_arn: string;
-  azure_default_duration_hours: string;
+  azure_default_role_arn?: string;
+  azure_default_duration_hours?: string;
   region?: string;
-  azure_default_remember_me: boolean;
+  azure_default_remember_me?: boolean;
   [key: string]: unknown;
 }
 
