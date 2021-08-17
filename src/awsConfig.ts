@@ -17,6 +17,7 @@ export interface ProfileConfig {
   azure_app_id_uri: string;
   azure_default_username: string;
   azure_default_password?: string;
+  azure_default_tfa_secret?: string;
   azure_default_role_arn: string;
   azure_default_duration_hours: string;
   region?: string;
