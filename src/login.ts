@@ -305,6 +305,14 @@ const states = [
         console.log(descriptionMessage);
       }
 
+      debug("Focusing on verification code input");
+      await page.focus(`input[name="otc"]`);
+
+      debug("Clearing input");
+      for (let i = 0; i < 100; i++) {
+        await page.keyboard.press("Backspace");
+      }
+
       let verificationCode: string;
 
       if (noPrompt && defaultTfaSecret) {
@@ -329,14 +337,6 @@ const states = [
             message: "Verification Code:",
           } as Question,
         ]));
-      }
-
-      debug("Focusing on verification code input");
-      await page.focus(`input[name="otc"]`);
-
-      debug("Clearing input");
-      for (let i = 0; i < 100; i++) {
-        await page.keyboard.press("Backspace");
       }
 
       debug("Typing verification code");
