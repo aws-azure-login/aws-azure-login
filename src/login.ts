@@ -518,7 +518,7 @@ export const login = {
 
   // Load the profile
   async _loadProfileAsync(profileName: string): Promise<ProfileConfig> {
-    var profile = await awsConfig.getProfileConfigAsync(profileName);
+    let profile = await awsConfig.getProfileConfigAsync(profileName);
 
     const env = this._loadProfileFromEnv();
 
