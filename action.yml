@@ -1,0 +1,46 @@
+name: 'AWS Azure Login'
+description: 'Allows you to login into AWS through Azure AD SSO'
+inputs:
+  tenant_id:
+    description: 'Which tenant ID to use'
+    required: true
+  app_id:
+    description: 'Which app ID to use'
+    required: true
+  username:
+    description: 'Which username to use'
+    required: false
+  password:
+    description: 'Which password to use'
+    required: false
+  tfa_secret:
+    description: 'If using TOTP, specify generator secret'
+    required: false
+  role_arn:
+    description: 'If you have more than one, you can specify which role to use'
+    required: false
+  duration:
+    descriptions: 'Specify how many hours should the credentials last for'
+    required: false
+outputs:
+  aws_access_key_id:
+    description: "The resulting AWS Access Key ID"
+  aws_secret_access_key:
+    description: "The resulting AWS Secret Access Key"
+  aws_session_token:
+    description: "The resulting AWS Session Token"
+  aws_expiration:
+    description: "The resulting AWS Credentials Expiration"
+runs:
+  using: 'docker'
+  image: 'docker://sportsradar/aws-azure-login'
+  env:
+    AZURE_TENANT_ID: ${{ inputs.tenant_id }}
+    AZURE_APP_ID_URI: ${{ inputs.app_id }}
+    AZURE_DEFAULT_USERNAME: ${{ inputs.username }}
+    AZURE_DEFAULT_PASSWORD: ${{ inputs.password }}
+    AZURE_DEFAULT_TFA_SECRET: ${{ inputs.tfa_secret }}
+    AZURE_DEFAULT_ROLE_ARN: ${{ inputs.role_arn }}
+    AZURE_DEFAULT_DURATION_HOURS: ${{ inputs.duration }}
+  args:
+   - '--no-prompt'

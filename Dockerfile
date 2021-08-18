@@ -51,4 +51,6 @@ RUN cd /aws-azure-login \
 
 COPY lib /aws-azure-login/lib
 
-ENTRYPOINT ["node", "/aws-azure-login/lib", "--no-sandbox"]
+COPY entrypoint.sh /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
