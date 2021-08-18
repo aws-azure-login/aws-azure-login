@@ -43,4 +43,4 @@ runs:
     AZURE_DEFAULT_ROLE_ARN: ${{ inputs.role_arn }}
     AZURE_DEFAULT_DURATION_HOURS: ${{ inputs.duration }}
   args:
-   - '--no-prompt'
+    - '--no-prompt'
