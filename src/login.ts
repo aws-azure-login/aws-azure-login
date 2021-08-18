@@ -42,6 +42,29 @@ interface Role {
  */
 const states = [
   {
+    name: "suspicious activity",
+    selectorX: `//div[text()="Suspicious activity detected"]`,
+    async handler(page: puppeteer.Page): Promise<void> {
+      debug("Waiting for verify button");
+      await page.waitForSelector(`input[value=Verify]:not(.moveOffScreen)`, {
+        visible: true,
+        timeout: 60000,
+      });
+
+      debug("Clicking verify button");
+      await page.click("input[value=Verify]:not(.moveOffScreen)");
+
+      debug("Waiting for otp button");
+      await page.waitForSelector(`[data-value=PhoneAppOTP]`, {
+        visible: true,
+        timeout: 60000,
+      });
+
+      debug("Clicking otp button");
+      await page.click("[data-value=PhoneAppOTP]");
+    },
+  },
+  {
     name: "username input",
     selector: `input[name="loginfmt"]:not(.moveOffScreen)`,
     async handler(
@@ -720,7 +743,11 @@ export const login = {
 
             let selected;
             try {
-              selected = await page.$(state.selector);
+              if (state.selectorX) {
+                [selected] = await page.$x(state.selectorX);
+              } else if (state.selector) {
+                selected = await page.$(state.selector);
+              }
             } catch (err) {
               if (err instanceof Error) {
                 // An error can be thrown if the page isn't in a good state.
