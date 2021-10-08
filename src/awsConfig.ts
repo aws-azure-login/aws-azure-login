@@ -19,6 +19,7 @@ export interface ProfileConfig {
   azure_default_password?: string;
   azure_default_role_arn: string;
   azure_default_duration_hours: string;
+  azure_assertion_consumer_service_url: string;
   region?: string;
   azure_default_remember_me: boolean;
   [key: string]: unknown;

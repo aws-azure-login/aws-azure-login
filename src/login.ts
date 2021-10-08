@@ -408,6 +408,9 @@ export const login = {
     if (profile.region && profile.region.startsWith("cn-")) {
       assertionConsumerServiceURL = AWS_CN_SAML_ENDPOINT;
     }
+    if (profile.azure_assertion_consumer_service_url) {
+      assertionConsumerServiceURL = profile.azure_assertion_consumer_service_url
+    }
 
     console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
 
@@ -557,10 +560,10 @@ export const login = {
     const id = v4();
 
     const samlRequest = `
-        <samlp:AuthnRequest xmlns="urn:oasis:names:tc:SAML:2.0:metadata" ID="id${id}" Version="2.0" IssueInstant="${new Date().toISOString()}" IsPassive="false" AssertionConsumerServiceURL="${assertionConsumerServiceURL}" xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol">
-            <Issuer xmlns="urn:oasis:names:tc:SAML:2.0:assertion">${appIdUri}</Issuer>
-            <samlp:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"></samlp:NameIDPolicy>
-        </samlp:AuthnRequest>
+    <saml2p:AuthnRequest xmlns:saml2p="urn:oasis:names:tc:SAML:2.0:protocol" AssertionConsumerServiceURL="${assertionConsumerServiceURL}" Destination="https://login.microsoftonline.com/${tenantId}/saml2" ID="id${id}" IssueInstant="${new Date().toISOString()}" ProtocolBinding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Version="2.0">
+      <saml2:Issuer xmlns:saml2="urn:oasis:names:tc:SAML:2.0:assertion">${appIdUri}</saml2:Issuer>
+      <saml2p:NameIDPolicy Format="urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"/>
+    </saml2p:AuthnRequest>
         `;
     debug("Generated SAML request", samlRequest);
 

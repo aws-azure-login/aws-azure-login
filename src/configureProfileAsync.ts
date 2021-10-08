@@ -22,6 +22,12 @@ export async function configureProfileAsync(
       default: profile && profile.azure_app_id_uri,
     },
     {
+      name: "assertionConsumerServiceURL",
+      message: "Azure Assertion Consumer ID URI:",
+      validate: (input): boolean => !!input,
+      default: profile && profile.azure_assertion_consumer_service_url,
+    },
+    {
       name: "username",
       message: "Default Username:",
       default: profile && profile.azure_default_username,
@@ -66,6 +72,7 @@ export async function configureProfileAsync(
     azure_default_role_arn: answers.defaultRoleArn as string,
     azure_default_duration_hours: answers.defaultDurationHours as string,
     azure_default_remember_me: (answers.rememberMe as string) === "true",
+    azure_assertion_consumer_service_url: answers.assertionConsumerServiceURL as string,
   });
 
   console.log("Profile saved.");
