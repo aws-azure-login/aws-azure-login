@@ -63,12 +63,16 @@ export const awsConfig = {
     const config = await this._loadAsync<{ [key: string]: ProfileConfig }>(
       "config"
     );
+    const envConfig = this._loadFromEnv();
 
     if (!config) {
+      if (this._isConfigProfileComplete(envConfig)) {
+        return envConfig;
+      }
       return undefined;
     }
 
-    return config[sectionName];
+    return { ...config[sectionName], ...envConfig };
   },
 
   async isProfileAboutToExpireAsync(profileName: string): Promise<boolean> {
@@ -122,6 +126,32 @@ export const awsConfig = {
     });
     debug(`Received profiles: ${profiles.toString()}`);
     return profiles;
+  },
+
+  _isConfigProfileComplete(
+    config: Partial<ProfileConfig>
+  ): config is ProfileConfig {
+    return (
+      config.azure_tenant_id != null &&
+      config.azure_app_id_uri != null &&
+      config.azure_default_username != null &&
+      config.azure_default_role_arn != null &&
+      config.azure_default_duration_hours != null &&
+      config.azure_default_remember_me != null
+    );
+  },
+
+  _loadFromEnv(): Partial<ProfileConfig> {
+    const env = process.env;
+    return {
+      azure_tenant_id: env.AZURE_TENANT_ID,
+      azure_app_id_uri: env.AZURE_APP_ID_URI,
+      azure_default_username: env.AZURE_DEFAULT_USERNAME,
+      azure_default_password: env.AZURE_DEFAULT_PASSWORD,
+      azure_default_role_arn: env.AZURE_DEFAULT_ROLE_ARN,
+      azure_default_duration_hours: env.AZURE_DEFAULT_DURATION_HOURS,
+      azure_default_remember_me: env.AZURE_DEFAULT_REMEMBER_ME === "true",
+    };
   },
 
   async _loadAsync<T>(type: string): Promise<T | undefined> {
