@@ -1,5 +1,4 @@
-[![view on npm](http://img.shields.io/npm/v/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
-[![npm module downloads per month](http://img.shields.io/npm/dm/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
+## Forked from [sportradar/aws-azure-login](https://github.com/sportradar/aws-azure-login)
 
 # aws-azure-login
 
