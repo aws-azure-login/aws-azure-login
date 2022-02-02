@@ -21,22 +21,22 @@ jobs:
           name: lib
           path: lib
 
-  publish-npm:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: lib
-          path: lib
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 14
-          registry-url: https://registry.npmjs.org/
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+  # publish-npm:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/download-artifact@v2
+  #       with:
+  #         name: lib
+  #         path: lib
+  #     - uses: actions/setup-node@v1
+  #       with:
+  #         node-version: 14
+  #         registry-url: https://registry.npmjs.org/
+  #     - run: npm publish
+  #       env:
+  #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   publish-docker:
     needs: build
@@ -47,28 +47,38 @@ jobs:
         with:
           name: lib
           path: lib
-      - name: Publish to Registry
-        uses: elgohr/Publish-Docker-Github-Action@master
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Inspect builder
+        run: |
+          echo "Name:      ${{ steps.buildx.outputs.name }}"
+          echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+          echo "Status:    ${{ steps.buildx.outputs.status }}"
+          echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+          echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+      # - name: Build the Docker image
+      #   run: docker buildx build . --file Dockerfile --platform=linux/amd64,linux/arm64 --tag aws-azure-login:$(date +%s) --tag aws-azure-login:latest
+      - name: Build and push to registry
+        uses: docker/build-push-action@v2
         with:
-          name: sportradar/aws-azure-login
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          snapshot: true
-          dockerfile: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: aws-azure-login:latest,aws-azure-login:${GITHUB_SHA::8}
 
-  publish-snap:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
-        with:
-          name: lib
-          path: lib
-      - uses: snapcore/action-build@v1
-        id: build
-      - uses: snapcore/action-publish@v1
-        with:
-          store_login: ${{ secrets.SNAPCRAFT_STORE_LOGIN }}
-          snap: ${{ steps.build.outputs.snap }}
-          release: stable
+  # publish-snap:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - uses: actions/download-artifact@v2
+  #       with:
+  #         name: lib
+  #         path: lib
+  #     - uses: snapcore/action-build@v1
+  #       id: build
+  #     - uses: snapcore/action-publish@v1
+  #       with:
+  #         store_login: ${{ secrets.SNAPCRAFT_STORE_LOGIN }}
+  #         snap: ${{ steps.build.outputs.snap }}
+  #         release: stable
