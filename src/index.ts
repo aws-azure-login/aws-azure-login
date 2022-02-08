@@ -69,7 +69,10 @@ const noDisableExtensions = !options.disableExtensions;
 Promise.resolve()
   .then(() => {
     if (options.allProfiles) {
+      const profileMatcher = (options.profile as string | undefined) || ".*";
+
       return login.loginAll(
+        profileMatcher,
         mode,
         disableSandbox,
         noPrompt,
