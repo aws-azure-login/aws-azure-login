@@ -1,6 +1,10 @@
 [![view on npm](http://img.shields.io/npm/v/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
 [![npm module downloads per month](http://img.shields.io/npm/dm/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
 
+# ATTENTION: Looking for a new maintainer!
+
+## We have retired all dependencies from this project, and will no longer have the ability nor the interest to maintain this project. We are therefore looking for new maintainers. If you would like to take over as maintainer, please contact me directly. - Kenneth
+
 # aws-azure-login
 
 If your organization uses [Azure Active Directory](https://azure.microsoft.com) to provide SSO login to the AWS console, then there is no easy way to log in on the command line or to use the [AWS CLI](https://aws.amazon.com/cli/). This tool fixes that. It lets you use the normal Azure AD login (including MFA) from a command line to create a federated AWS session and places the temporary credentials in the proper place for the AWS CLI and SDKs.
@@ -8,6 +12,7 @@ If your organization uses [Azure Active Directory](https://azure.microsoft.com) 
 ## Installation
 
 Installation can be done in any of the following platform - Windows, Linux, Docker, Snap
+
 ### Windows
 
 Install [Node.js](https://nodejs.org/) v12 or higher. Then install aws-azure-login with npm:
