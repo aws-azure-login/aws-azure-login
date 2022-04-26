@@ -119,6 +119,7 @@ You can optionally store your responses as environment variables:
 - `AZURE_APP_ID_URI`
 - `AZURE_DEFAULT_USERNAME`
 - `AZURE_DEFAULT_PASSWORD`
+- `AZURE_DEFAULT_TFA_SECRET`
 - `AZURE_DEFAULT_ROLE_ARN`
 - `AZURE_DEFAULT_DURATION_HOURS`
 
@@ -130,6 +131,7 @@ Use the `HISTCONTROL` environment variable to avoid storing the password in your
 
     $ HISTCONTROL=ignoreboth
     $  export AZURE_DEFAULT_PASSWORD=mypassword
+    $  export AZURE_DEFAULT_TFA_SECRET=ABCDEFGHIJKLMNOP
     $ aws-azure-login
 
 ### Logging In
@@ -138,7 +140,9 @@ Once aws-azure-login is configured, you can log in. For the default profile, jus
 
     aws-azure-login
 
-You will be prompted for your username and password. If MFA is required you'll also be prompted for a verification code or mobile device approval. To log in with a named profile:
+You will be prompted for your username and password. If MFA is required you'll also be prompted for a verification code or mobile device approval. If you use TOTP, you can avoid typing it by passing the generator secret through the `AZURE_DEFAULT_TFA_SECRET` environment variable.
+
+To log in with a named profile:
 
     aws-azure-login --profile foo
 

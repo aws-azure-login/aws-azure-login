@@ -14,6 +14,7 @@ import proxy from "proxy-agent";
 import https from "https";
 import { paths } from "./paths";
 import mkdirp from "mkdirp";
+import { authenticator } from "otplib";
 
 const debug = _debug("aws-azure-login");
 
@@ -275,7 +276,14 @@ const states = [
   {
     name: "TFA code input",
     selector: "input[name=otc]:not(.moveOffScreen)",
-    async handler(page: puppeteer.Page): Promise<void> {
+    async handler(
+      page: puppeteer.Page,
+      _selected: puppeteer.ElementHandle,
+      noPrompt: boolean,
+      _defaultUsername: string,
+      _defaultPassword: string | undefined,
+      defaultTfaSecret: string | undefined
+    ): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
@@ -297,19 +305,38 @@ const states = [
         console.log(descriptionMessage);
       }
 
-      const { verificationCode } = await inquirer.prompt([
-        {
-          name: "verificationCode",
-          message: "Verification Code:",
-        } as Question,
-      ]);
-
       debug("Focusing on verification code input");
       await page.focus(`input[name="otc"]`);
 
       debug("Clearing input");
       for (let i = 0; i < 100; i++) {
         await page.keyboard.press("Backspace");
+      }
+
+      let verificationCode: string;
+
+      if (noPrompt && defaultTfaSecret) {
+        debug("Not prompting user for TOTP");
+        const generatedCode = authenticator.generate(defaultTfaSecret);
+        if (generatedCode) {
+          debug("Using TFA code " + generatedCode);
+          verificationCode = generatedCode;
+        } else {
+          debug("Could not generate TOTP, prompting");
+          ({ verificationCode } = await inquirer.prompt([
+            {
+              name: "verificationCode",
+              message: "Verification Code:",
+            } as Question,
+          ]));
+        }
+      } else {
+        ({ verificationCode } = await inquirer.prompt([
+          {
+            name: "verificationCode",
+            message: "Verification Code:",
+          } as Question,
+        ]));
       }
 
       debug("Typing verification code");
@@ -343,6 +370,7 @@ const states = [
       _noPrompt: boolean,
       _defaultUsername: string,
       _defaultPassword: string | undefined,
+      _defaultTfaSecret: string | undefined,
       rememberMe: boolean
     ): Promise<void> {
       if (rememberMe) {
@@ -425,6 +453,7 @@ export const login = {
       enableChromeNetworkService,
       profile.azure_default_username,
       profile.azure_default_password,
+      profile.azure_default_tfa_secret,
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
       noDisableExtensions
@@ -494,6 +523,7 @@ export const login = {
       "azure_app_id_uri",
       "azure_default_username",
       "azure_default_password",
+      "azure_default_tfa_secret",
       "azure_default_role_arn",
       "azure_default_duration_hours",
     ];
@@ -512,6 +542,7 @@ export const login = {
     debug({
       ...env,
       azure_default_password: "xxxxxxxxxx",
+      azure_default_tfa_secret: "xxxxxxxxxx",
     });
     return env;
   },
@@ -595,6 +626,7 @@ export const login = {
    * @param {bool} [enableChromeNetworkService] - Enable chrome network service.
    * @param {string} [defaultUsername] - The default username
    * @param {string} [defaultPassword] - The default password
+   * @param {string} [defaultTfaSecret] - The default TFA secret
    * @param {bool} [enableChromeSeamlessSso] - chrome seamless SSO
    * @param {bool} [rememberMe] - Enable remembering the session
    * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
@@ -610,6 +642,7 @@ export const login = {
     enableChromeNetworkService: boolean,
     defaultUsername: string,
     defaultPassword: string | undefined,
+    defaultTfaSecret: string | undefined,
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
     noDisableExtensions: boolean
@@ -746,6 +779,7 @@ export const login = {
                   noPrompt,
                   defaultUsername,
                   defaultPassword,
+                  defaultTfaSecret,
                   rememberMe
                 ),
               ]);
