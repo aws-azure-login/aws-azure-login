@@ -93,6 +93,7 @@ const states = [
       }
 
       debug("Typing username");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await page.keyboard.type(username);
 
       await Bluebird.delay(500);
@@ -225,6 +226,7 @@ const states = [
       await page.focus(`input[name="Password"],input[name="passwd"]`);
 
       debug("Typing password");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await page.keyboard.type(password);
 
       debug("Submitting form");
@@ -269,6 +271,7 @@ const states = [
         (description) => description.textContent,
         selected
       );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       throw new CLIError(descriptionMessage);
     },
   },
@@ -313,6 +316,7 @@ const states = [
       }
 
       debug("Typing verification code");
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await page.keyboard.type(verificationCode);
 
       debug("Submitting form");
@@ -370,6 +374,7 @@ const states = [
         (description) => description.textContent,
         selected
       );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       throw new CLIError(descriptionMessage);
     },
   },

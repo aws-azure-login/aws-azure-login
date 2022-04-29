@@ -143,6 +143,7 @@ export const awsConfig = {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const parsedIni: any = ini.parse(data);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
         return resolve(parsedIni);
       });
     });
