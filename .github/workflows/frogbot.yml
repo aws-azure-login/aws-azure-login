@@ -1,0 +1,2 @@
+- name: Frogbot by JFrog
+  uses: jfrog/frogbot@v2.0.0
