@@ -127,29 +127,18 @@ const states = [
   },
   {
     name: "account selection",
-    selector: `#aadTile > div > div.table-cell.tile-img > img`,
+    selector: `#tilesHolder > div.tile-container > div > div.table > div > div.table-cell.tile-img > img`,
     async handler(page: puppeteer.Page): Promise<void> {
       debug("Multiple accounts associated with username.");
-      const aadTile = await page.$("#aadTileTitle");
+      const Tile = await page.$("#tilesHolder > div.tile-container > div > div.table > div > div.table-cell.text-left.content > div");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const aadTileMessage: string = await page.evaluate(
+      const TileMessage: string = await page.evaluate(
         // eslint-disable-next-line
         (a) => a.textContent,
-        aadTile
+        Tile
       );
 
-      const msaTile = await page.$("#msaTileTitle");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const msaTileMessage: string = await page.evaluate(
-        // eslint-disable-next-line
-        (m) => m.textContent,
-        msaTile
-      );
-
-      const accounts = [
-        { message: aadTileMessage, selector: "#aadTileTitle" },
-        { message: msaTileMessage, selector: "#msaTileTitle" },
-      ];
+      const accounts = [{ message: TileMessage, selector: "#tilesHolder > div.tile-container > div > div.table > div > div.table-cell.text-left.content > div" }];
 
       let account;
       if (accounts.length === 0) {
@@ -167,7 +156,7 @@ const states = [
             message: "Account:",
             type: "list",
             choices: _.map(accounts, "message"),
-            default: aadTileMessage,
+            default: TileMessage,
           } as Question,
         ]);
 
