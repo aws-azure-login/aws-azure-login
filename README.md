@@ -82,7 +82,8 @@ Set environment variables for `pupeteer` then install `aws-azure-login`
 
 
 #### Docker container on Mac
-Use the Dockerfile.arm64 to build your container example:
+Use the `Dockerfile.arm64` to build your container example:
+
     docker build -t aws-azure-login-arm64 -f Dockerfile.arm64 .
 
 ## Usage
