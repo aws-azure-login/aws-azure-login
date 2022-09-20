@@ -73,9 +73,8 @@ Both of the bellow methods have been tested to work on Mac with M1 Pro CPU.
 #### Local installation on Mac (for all users)
 Install `node`, `npm`, `pupeteer` and `chromium`.
 
-Set environment variables for `pupeteer` then install `aws-azure-login`
+Set environment variables for `pupeteer` then install `aws-azure-login`:
 
-    export PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
     export PUPPETEER_EXECUTABLE_PATH=`which chromium`
     sudo npm install -g aws-azure-login --unsafe-perm
     sudo chmod -R go+rx $(npm root -g)
