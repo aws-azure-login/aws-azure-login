@@ -71,11 +71,13 @@ https://snapcraft.io/aws-azure-login
 Both of the bellow methods have been tested to work on Mac with M1 Pro CPU.
 
 #### Local installation on Mac (for all users)
-Install `node`, `npm`, `pupeteer` and `chromium`.
+First install `node`, `npm` and `chromium` on your Mac.
 
-Set environment variables for `pupeteer` then install `aws-azure-login`:
+Set environment variables for `pupeteer`, then install it localy.
+Finally install `aws-azure-login`:
 
     export PUPPETEER_EXECUTABLE_PATH=`which chromium`
+    npm install puppeteer
     sudo npm install -g aws-azure-login --unsafe-perm
     sudo chmod -R go+rx $(npm root -g)
 
