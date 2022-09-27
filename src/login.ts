@@ -15,6 +15,7 @@ import https from "https";
 import { paths } from "./paths";
 import mkdirp from "mkdirp";
 import { filter as fuzzyFilter } from "fuzzy";
+import inquirerAutocomplete from "inquirer-autocomplete-prompt";
 
 const debug = _debug("aws-azure-login");
 
@@ -34,7 +35,7 @@ interface Role {
   principalArn: string;
 }
 
-inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
+inquirer.registerPrompt("autocomplete", inquirerAutocomplete);
 
 /**
  * To proxy the input/output of the Azure login page, it's easiest to run a loop that
@@ -883,15 +884,19 @@ export const login = {
         questions.push({
           name: "role",
           message: "Role:",
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           type: "autocomplete",
           default: defaultRoleArn,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          source: (__, input='') => {
+          source: (__, input = "") => {
             return new Promise((resolve) => {
               resolve(
-                fuzzyFilter(input, _.sortBy(_.map(roles, "roleArn")))
-                  .map(e => e.original));
+                fuzzyFilter(input, _.sortBy(_.map(roles, "roleArn"))).map(
+                  (e) => e.original
+                )
+              );
             });
           },
         });
