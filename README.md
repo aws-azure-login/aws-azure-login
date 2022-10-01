@@ -83,6 +83,11 @@ Finally install `aws-azure-login`:
 
 
 #### Docker container on Mac
+Fisrt build the app according to the steps from `.github/workflows/main.yml`:
+    yarn install
+    yarn test
+    yarn build
+
 Use the `Dockerfile.arm64` to build your container example:
 
     docker build -t aws-azure-login-arm64 -f Dockerfile.arm64 .
