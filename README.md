@@ -84,6 +84,7 @@ Finally install `aws-azure-login`:
 
 #### Docker container on Mac
 Fisrt build the app according to the steps from `.github/workflows/main.yml`:
+
     yarn install
     yarn test
     yarn build
