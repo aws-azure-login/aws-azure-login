@@ -250,7 +250,12 @@ const states = [
         selected
       );
       console.log(descriptionMessage);
-
+      // Print MFA code
+      const n = await page.$("#idRichContext_DisplaySign")
+      if (n != null) {
+        const mfaCode = await (await n.getProperty('textContent')).jsonValue()
+        console.log(mfaCode )
+      }
       debug("Waiting for response");
       await page.waitForSelector(`#idDiv_SAOTCAS_Description`, {
         hidden: true,
