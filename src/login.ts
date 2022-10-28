@@ -251,6 +251,14 @@ const states = [
       );
       console.log(descriptionMessage);
 
+      if (descriptionMessage.includes("enter the number shown to sign in")) {
+        const authenticationCodeElement = await page.$("#idRichContext_DisplaySign");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const authenticationCode = await page.evaluate(
+        // eslint-disable-next-line
+        (d) => d.textContent, authenticationCodeElement);
+        console.log(authenticationCode);
+      }
       debug("Waiting for response");
       await page.waitForSelector(`#idDiv_SAOTCAS_Description`, {
         hidden: true,
