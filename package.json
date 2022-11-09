@@ -4,15 +4,15 @@
   "description": "Use Azure AD SSO to log into the AWS CLI.",
   "main": "index.js",
   "author": {
-    "name": "DTN",
-    "url": "https://github.com/dtn-public"
+    "name": "aws-azure-login devs",
+    "url": "https://github.com/aws-azure-login"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dtn-public/aws-azure-login.git"
+    "url": "https://github.com/aws-azure-login/aws-azure-login.git"
   },
-  "bugs": "https://github.com/dtn-public/aws-azure-login/issues",
+  "bugs": "https://github.com/aws-azure-loginc/aws-azure-login/issues",
   "engines": {
     "node": ">=12.0"
   },
