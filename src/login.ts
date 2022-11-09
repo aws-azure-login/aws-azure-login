@@ -250,7 +250,7 @@ const states = [
         selected
       );
       console.log(descriptionMessage);
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      // eslint-disable-next-line
       if (descriptionMessage.includes("enter the number shown to sign in")) {
         const authenticationCodeElement = await page.$("#idRichContext_DisplaySign");
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
