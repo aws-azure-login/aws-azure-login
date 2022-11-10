@@ -25,7 +25,7 @@
     "watch": "tsc -w",
     "eslint": "eslint . --ext .ts",
     "prettier:write": "prettier --write \"src/**/*.{ts,json}\"",
-    "prettier:check": "prettier --list-different \"src/**/*.ts\"",
+    "prettier:check": "prettier --check \"src/**/*.ts\"",
     "test": "yarn eslint && yarn prettier:check"
   },
   "dependencies": {
