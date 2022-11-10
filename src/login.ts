@@ -184,6 +184,47 @@ const states = [
     },
   },
   {
+    name: "passwordless",
+    selector: `input[value='Send notification']`,
+    async handler(page) {
+      debug("Sending notification");
+      // eslint-disable-next-line
+      await page.click("input[value='Send notification']");
+      debug("Waiting for auth code");
+      // eslint-disable-next-line
+      await page.waitForSelector(`#idRemoteNGC_DisplaySign`, {
+        visible: true,
+        timeout: 60000,
+      });
+      // eslint-disable-next-line
+      const messageElement = await page.$(
+        "#idDiv_RemoteNGC_PollingDescription"
+      );
+      // eslint-disable-next-line
+      const codeElement = await page.$("#idRemoteNGC_DisplaySign");
+      // eslint-disable-next-line
+      const message = await page.evaluate(
+        // eslint-disable-next-line
+        (el) => el.textContent,
+        messageElement
+      );
+      console.log(message);
+      // eslint-disable-next-line
+      const authCode = await page.evaluate(
+        // eslint-disable-next-line
+        (el) => el.textContent,
+        codeElement
+      );
+      console.log(authCode);
+      debug("Waiting for response");
+      // eslint-disable-next-line
+      await page.waitForSelector(`#idRemoteNGC_DisplaySign`, {
+        hidden: true,
+        timeout: 60000,
+      });
+    },
+  },
+  {
     name: "password input",
     selector: `input[name="Password"]:not(.moveOffScreen),input[name="passwd"]:not(.moveOffScreen)`,
     async handler(
