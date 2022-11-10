@@ -196,11 +196,11 @@ const states = [
         visible: true,
         timeout: 60000,
       });
-      // eslint-disable-next-line
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const messageElement = await page.$(
         "#idDiv_RemoteNGC_PollingDescription"
       );
-      // eslint-disable-next-line
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const codeElement = await page.$("#idRemoteNGC_DisplaySign");
       // eslint-disable-next-line
       const message = await page.evaluate(
@@ -209,7 +209,7 @@ const states = [
         messageElement
       );
       console.log(message);
-      // eslint-disable-next-line
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const authCode = await page.evaluate(
         // eslint-disable-next-line
         (el) => el.textContent,
@@ -217,7 +217,6 @@ const states = [
       );
       console.log(authCode);
       debug("Waiting for response");
-      // eslint-disable-next-line
       await page.waitForSelector(`#idRemoteNGC_DisplaySign`, {
         hidden: true,
         timeout: 60000,
