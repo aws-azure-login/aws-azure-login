@@ -186,7 +186,7 @@ const states = [
   {
     name: "passwordless",
     selector: `input[value='Send notification']`,
-    async handler(page) {
+    async handler(page: puppeteer.Page) {
       debug("Sending notification");
       // eslint-disable-next-line
       await page.click("input[value='Send notification']");
