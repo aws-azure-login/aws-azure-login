@@ -250,17 +250,20 @@ const states = [
         selected
       );
       console.log(descriptionMessage);
+      debug("Checking if authentication code is displayed");
       // eslint-disable-next-line
       if (descriptionMessage.includes("enter the number shown to sign in")) {
         const authenticationCodeElement = await page.$(
           "#idRichContext_DisplaySign"
         );
+        debug("Reading the authentication code");
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const authenticationCode = await page.evaluate(
           // eslint-disable-next-line
           (d) => d.textContent,
           authenticationCodeElement
         );
+        debug("Printing the authentication code to console");
         console.log(authenticationCode);
       }
       debug("Waiting for response");
