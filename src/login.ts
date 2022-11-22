@@ -196,6 +196,7 @@ const states = [
         visible: true,
         timeout: 60000,
       });
+      debug("Printing the message displayed");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const messageElement = await page.$(
         "#idDiv_RemoteNGC_PollingDescription"
@@ -209,6 +210,7 @@ const states = [
         messageElement
       );
       console.log(message);
+      debug("Printing the auth code");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const authCode = await page.evaluate(
         // eslint-disable-next-line
