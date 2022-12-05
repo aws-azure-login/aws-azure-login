@@ -49,6 +49,10 @@ program
     "--no-disable-extensions",
     "Tell Puppeteer not to pass the --disable-extensions flag to Chromium"
   )
+  .option(
+    "--disable-gpu",
+    "Tell Puppeteer to pass the --disable-gpu flag to Chromium"
+  )
   .parse(process.argv);
 
 const options = program.opts();
@@ -65,6 +69,7 @@ const awsNoVerifySsl = !options.verifySsl;
 const enableChromeSeamlessSso = !!options.enableChromeSeamlessSso;
 const forceRefresh = !!options.forceRefresh;
 const noDisableExtensions = !options.disableExtensions;
+const disableGpu = !!options.disableGpu;
 
 Promise.resolve()
   .then(() => {
@@ -77,7 +82,8 @@ Promise.resolve()
         awsNoVerifySsl,
         enableChromeSeamlessSso,
         forceRefresh,
-        noDisableExtensions
+        noDisableExtensions,
+        disableGpu
       );
     }
 
@@ -90,7 +96,8 @@ Promise.resolve()
       enableChromeNetworkService,
       awsNoVerifySsl,
       enableChromeSeamlessSso,
-      noDisableExtensions
+      noDisableExtensions,
+      disableGpu
     );
   })
   .catch((err: Error) => {
