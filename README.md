@@ -152,6 +152,10 @@ If you are logging in on an operating system with a GUI, you can log in using th
 
 Logging in with GUI mode is likely to be much more reliable.
 
+_Note:_ on virtual machines, or when rendering of the puppeteer UI fails, you might need to disable the GPU Hardware Acceleration:
+
+    aws-azure-login --mode gui --disable-gpu
+
 _Note:_ on Linux you will likely need to disable the Puppeteer sandbox or Chrome will fail to launch:
 
     aws-azure-login --no-sandbox
