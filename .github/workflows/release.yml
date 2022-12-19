@@ -55,6 +55,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           snapshot: true
           dockerfile: Dockerfile
+          platforms: linux/amd64,linux/arm64
 
   publish-snap:
     needs: build
