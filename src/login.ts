@@ -59,7 +59,7 @@ const states = [
           (err) => err.textContent,
           error
         );
-        console.log(errorMessage);
+        console.error(errorMessage);
       }
 
       let username;
@@ -158,7 +158,7 @@ const states = [
         account = accounts[0];
       } else {
         debug("Asking user to choose account");
-        console.log(
+        console.error(
           "It looks like this Username is used with more than one account from Microsoft. Which one do you want to use?"
         );
         const answers = await inquirer.prompt([
@@ -209,7 +209,7 @@ const states = [
         (el) => el.textContent,
         messageElement
       );
-      console.log(message);
+      console.error(message);
       debug("Printing the auth code");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const authCode = await page.evaluate(
@@ -217,7 +217,7 @@ const states = [
         (el) => el.textContent,
         codeElement
       );
-      console.log(authCode);
+      console.error(authCode);
       debug("Waiting for response");
       await page.waitForSelector(`#idRemoteNGC_DisplaySign`, {
         hidden: true,
@@ -244,7 +244,7 @@ const states = [
           (err) => err.textContent,
           error
         );
-        console.log(errorMessage);
+        console.error(errorMessage);
         defaultPassword = ""; // Password error. Unset the default and allow user to enter it.
       }
 
@@ -291,7 +291,7 @@ const states = [
         (description) => description.textContent,
         selected
       );
-      console.log(descriptionMessage);
+      console.error(descriptionMessage);
       debug("Checking if authentication code is displayed");
       // eslint-disable-next-line
       if (descriptionMessage.includes("enter the number shown to sign in")) {
@@ -306,7 +306,7 @@ const states = [
           authenticationCodeElement
         );
         debug("Printing the authentication code to console");
-        console.log(authenticationCode);
+        console.error(authenticationCode);
       }
       debug("Waiting for response");
       await page.waitForSelector(`#idDiv_SAOTCAS_Description`, {
@@ -335,7 +335,7 @@ const states = [
   {
     name: "TFA code input",
     selector: "input[name=otc]:not(.moveOffScreen)",
-    async handler(page: puppeteer.Page): Promise<void> {
+    async handler(page: puppeteer.Page, _selected: puppeteer.ElementHandle, noPrompt: boolean): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
@@ -345,7 +345,7 @@ const states = [
           (err) => err.textContent,
           error
         );
-        console.log(errorMessage);
+        console.error(errorMessage);
       } else {
         const description = await page.$("#idDiv_SAOTCC_Description");
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -354,15 +354,25 @@ const states = [
           (d) => d.textContent,
           description
         );
-        console.log(descriptionMessage);
+        console.error(descriptionMessage);
       }
 
-      const { verificationCode } = await inquirer.prompt([
-        {
-          name: "verificationCode",
-          message: "Verification Code:",
-        } as Question,
-      ]);
+      let verificationCode;
+
+      if (noPrompt && process.env.AZURE_VERIFICATION_CODE) {
+        debug("Not prompting user for verification code");
+        verificationCode = process.env.AZURE_VERIFICATION_CODE;
+      } else {
+        debug("Prompting user for verification code");
+        const answer = await inquirer.prompt([
+          {
+            name: "verificationCode",
+            message: "Verification Code:",
+          } as Question,
+        ]);
+        verificationCode = answer.verificationCode;
+      }
+
 
       debug("Focusing on verification code input");
       await page.focus(`input[name="otc"]`);
@@ -472,7 +482,7 @@ export const login = {
       assertionConsumerServiceURL = AWS_CN_SAML_ENDPOINT;
     }
 
-    console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
+    console.error("Using AWS SAML endpoint", assertionConsumerServiceURL);
 
     const loginUrl = await this._createLoginUrlAsync(
       profile.azure_app_id_uri,
@@ -514,6 +524,7 @@ export const login = {
     mode: string,
     disableSandbox: boolean,
     noPrompt: boolean,
+    printCreds: boolean,
     enableChromeNetworkService: boolean,
     awsNoVerifySsl: boolean,
     enableChromeSeamlessSso: boolean,
@@ -602,7 +613,7 @@ export const login = {
         `Profile '${profileName}' is not configured properly.`
       );
 
-    console.log(`Logging in with profile '${profileName}'...`);
+    console.error(`Logging in with profile '${profileName}'...`);
     return profile;
   },
 
@@ -845,7 +856,7 @@ export const login = {
           }
         }
       } else {
-        console.log("Please complete the login in the opened window");
+        console.error("Please complete the login in the opened window");
         await samlResponsePromise;
       }
 
@@ -1006,7 +1017,7 @@ export const login = {
     awsNoVerifySsl: boolean,
     region: string | undefined
   ): Promise<void> {
-    console.log(`Assuming role ${role.roleArn}`);
+    console.error(`Assuming role ${role.roleArn}`);
     if (process.env.https_proxy) {
       AWS.config.update({
         httpOptions: {
@@ -1046,11 +1057,24 @@ export const login = {
       return;
     }
 
-    await awsConfig.setProfileCredentialsAsync(profileName, {
-      aws_access_key_id: res.Credentials.AccessKeyId,
-      aws_secret_access_key: res.Credentials.SecretAccessKey,
-      aws_session_token: res.Credentials.SessionToken,
-      aws_expiration: res.Credentials.Expiration.toISOString(),
-    });
+    if (printCreds) {
+      console.log(JSON.stringify(
+        {
+          "Version": 1,
+          "AccessKeyId":  res.Credentials.AccessKeyId,
+          "SecretAccessKey": res.Credentials.SecretAccessKey,
+          "SessionToken": res.Credentials.SessionToken,
+          "Expiration": res.Credentials.Expiration.toISOString()
+        }
+      ));
+    } else {
+      await awsConfig.setProfileCredentialsAsync(profileName, {
+        aws_access_key_id: res.Credentials.AccessKeyId,
+        aws_secret_access_key: res.Credentials.SecretAccessKey,
+        aws_session_token: res.Credentials.SessionToken,
+        aws_expiration: res.Credentials.Expiration.toISOString(),
+      });
+    }
+
   },
 };
