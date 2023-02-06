@@ -725,7 +725,7 @@ export const login = {
       await Bluebird.delay(200);
 
       const pages = await browser.pages();
-      const page = pages[0];
+      let page = pages[0];
       page.setExtraHTTPHeaders({
         "Accept-Language": "en"
       });
