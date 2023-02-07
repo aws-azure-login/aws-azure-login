@@ -34,6 +34,12 @@ program
     false
   )
   .option(
+    "--print",
+    "Echo credentials to stdout instead of writing to ~/.aws/credentials. Useful for AWS cli's credential_process config.",
+    false
+  )
+
+  .option(
     "--enable-chrome-network-service",
     "Enable Chromium's Network Service (needed when login provider redirects with 3XX)"
   )
@@ -64,6 +70,7 @@ const profileName =
 const mode = (options.mode as string | undefined) || "cli";
 const disableSandbox = !options.sandbox;
 const noPrompt = !options.prompt;
+const printCreds = !!options.print;
 const enableChromeNetworkService = !!options.enableChromeNetworkService;
 const awsNoVerifySsl = !options.verifySsl;
 const enableChromeSeamlessSso = !!options.enableChromeSeamlessSso;
@@ -78,6 +85,7 @@ Promise.resolve()
         mode,
         disableSandbox,
         noPrompt,
+        printCreds,
         enableChromeNetworkService,
         awsNoVerifySsl,
         enableChromeSeamlessSso,
