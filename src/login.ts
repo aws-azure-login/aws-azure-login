@@ -725,8 +725,8 @@ export const login = {
       await Bluebird.delay(200);
 
       const pages = await browser.pages();
-      let page = pages[0];
-      page.setExtraHTTPHeaders({
+      const page = pages[0];
+      await page.setExtraHTTPHeaders({
         "Accept-Language": "en"
       });
       await page.setViewport({ width: WIDTH - 15, height: HEIGHT - 35 });
