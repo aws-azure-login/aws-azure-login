@@ -727,7 +727,7 @@ export const login = {
       const pages = await browser.pages();
       const page = pages[0];
       await page.setExtraHTTPHeaders({
-        "Accept-Language": "en",
+        "Accept-Language": "en"
       });
       await page.setViewport({ width: WIDTH - 15, height: HEIGHT - 35 });
 
