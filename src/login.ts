@@ -14,6 +14,7 @@ import proxy from "proxy-agent";
 import https from "https";
 import { paths } from "./paths";
 import mkdirp from "mkdirp";
+import { AZURE_AD_AUTHENTICATION_ENDPOINTS, AZURE_AD_DEFAULT_AUTHENTICATION_ENDPOINT } from "./azureEndpoints";
 
 const debug = _debug("aws-azure-login");
 
@@ -477,6 +478,7 @@ export const login = {
     const loginUrl = await this._createLoginUrlAsync(
       profile.azure_app_id_uri,
       profile.azure_tenant_id,
+      profile.azure_authentication_endpoint || AZURE_AD_DEFAULT_AUTHENTICATION_ENDPOINT,
       assertionConsumerServiceURL
     );
     const samlResponse = await this._performLoginAsync(
@@ -610,6 +612,7 @@ export const login = {
    * Create the Azure login SAML URL.
    * @param {string} appIdUri - The app ID URI
    * @param {string} tenantId - The Azure tenant ID
+   * @param {string} authenticationEndpoint - The Azure AD authentication endpoint
    * @param {string} assertionConsumerServiceURL - The AWS SAML endpoint that Azure should send the SAML response to
    * @returns {string} The login URL
    * @private
@@ -617,6 +620,7 @@ export const login = {
   _createLoginUrlAsync(
     appIdUri: string,
     tenantId: string,
+    authenticationEndpoint: string,
     assertionConsumerServiceURL: string
   ): Promise<string> {
     debug("Generating UUID for SAML request");
@@ -641,7 +645,15 @@ export const login = {
         debug("Encoding SAML in base64");
         const samlBase64 = samlBuffer.toString("base64");
 
-        const url = `https://login.microsoftonline.com/${tenantId}/saml2?SAMLRequest=${encodeURIComponent(
+        console.log(`Azure AD authentication endpoint is: ${authenticationEndpoint}`);
+        // validate the azure ad authentication endpoint here as a common point whether
+        // configured in the profile, the profile was manually edited or we're falling
+        // back to the default. this is an additional security measure.
+        if (!AZURE_AD_AUTHENTICATION_ENDPOINTS.includes(authenticationEndpoint)) {
+          return reject(`Invalid Azure AD authentication endpoint. Must be one of: ${AZURE_AD_AUTHENTICATION_ENDPOINTS.join(', ')}`);
+        }
+
+        const url = `https://${authenticationEndpoint}/${tenantId}/saml2?SAMLRequest=${encodeURIComponent(
           samlBase64
         )}`;
         debug("Created login URL", url);

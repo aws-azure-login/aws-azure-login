@@ -1,5 +1,6 @@
 import inquirer, { Question } from "inquirer";
 import { awsConfig } from "./awsConfig";
+import { AZURE_AD_AUTHENTICATION_ENDPOINTS, AZURE_AD_DEFAULT_AUTHENTICATION_ENDPOINT } from "./azureEndpoints";
 
 export async function configureProfileAsync(
   profileName: string
@@ -20,6 +21,17 @@ export async function configureProfileAsync(
       message: "Azure App ID URI:",
       validate: (input): boolean => !!input,
       default: profile && profile.azure_app_id_uri,
+    },
+    {
+      name: "azureAuthenticationEndpoint",
+      message: "Azure AD authentication endpoint:",
+      default: (profile && profile.azure_authentication_endpoint) || AZURE_AD_DEFAULT_AUTHENTICATION_ENDPOINT,
+      validate: (input): boolean | string => {
+        if (input && !AZURE_AD_AUTHENTICATION_ENDPOINTS.includes(input as string)) {
+          return `Invalid Azure AD authentication endpoint. Must be one of: ${AZURE_AD_AUTHENTICATION_ENDPOINTS.join(', ')}`;
+        }
+        return true;
+      }
     },
     {
       name: "username",
@@ -62,6 +74,7 @@ export async function configureProfileAsync(
   await awsConfig.setProfileConfigValuesAsync(profileName, {
     azure_tenant_id: answers.tenantId as string,
     azure_app_id_uri: answers.appIdUri as string,
+    azure_authentication_endpoint: answers.azureAuthenticationEndpoint as string,
     azure_default_username: answers.username as string,
     azure_default_role_arn: answers.defaultRoleArn as string,
     azure_default_duration_hours: answers.defaultDurationHours as string,
