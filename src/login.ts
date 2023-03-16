@@ -13,6 +13,7 @@ import { awsConfig, ProfileConfig } from "./awsConfig";
 import proxy from "proxy-agent";
 import https from "https";
 import { paths } from "./paths";
+import path from "path";
 import mkdirp from "mkdirp";
 
 const debug = _debug("aws-azure-login");
@@ -491,7 +492,9 @@ export const login = {
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
       noDisableExtensions,
-      disableGpu
+      disableGpu,
+      profile.azure_tenant_id,
+      profile.chrome_data_by_azure_tenant,
     );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
@@ -665,6 +668,8 @@ export const login = {
    * @param {bool} [rememberMe] - Enable remembering the session
    * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
    * @param {bool} [disableGpu] - Disables GPU Acceleration
+   * @param {bool} [enableStoreChromeDataByAzureTenant] - Store Chrome user data by Azure AD tenant
+   * @param {string} [azureTenantId] - Azure AD tenant ID
    * @returns {Promise.<string>} The SAML response.
    * @private
    */
@@ -680,7 +685,9 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    azureTenantId: string,
+    enableStoreChromeDataByAzureTenant: boolean
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
@@ -699,8 +706,13 @@ export const login = {
           `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
         );
       if (rememberMe) {
-        await mkdirp(paths.chromium);
-        args.push(`--user-data-dir=${paths.chromium}`);
+        let chromeUserDataDir = paths.chromium;
+        if (enableStoreChromeDataByAzureTenant) {
+          chromeUserDataDir = path.join(chromeUserDataDir, azureTenantId);
+        }
+        debug(`Chrome user data directory: {chromeUserDataDir}`);
+        await mkdirp(chromeUserDataDir);
+        args.push(`--user-data-dir=${chromeUserDataDir}`);
       }
 
       if (process.env.https_proxy) {

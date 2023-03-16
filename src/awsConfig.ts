@@ -21,6 +21,7 @@ export interface ProfileConfig {
   azure_default_duration_hours: string;
   region?: string;
   azure_default_remember_me: boolean;
+  chrome_data_by_azure_tenant: boolean;
   [key: string]: unknown;
 }
 

@@ -55,6 +55,19 @@ export async function configureProfileAsync(
         return "Duration hours must be between 0 and 12";
       },
     },
+    {
+      name: "chromeDataByAzureTenant",
+      message: "Store Chrome user data by Azure AD tenant",
+      default:
+        (profile &&
+          profile.chrome_data_by_azure_tenant &&
+          profile.chrome_data_by_azure_tenant.toString()) ||
+        "false",
+      validate: (input): boolean | string => {
+        if (input === "true" || input === "false") return true;
+        return "Chrome user data by Azure tenant must be either true or false";
+      },
+    },
   ];
 
   const answers = await inquirer.prompt(questions);
@@ -66,6 +79,7 @@ export async function configureProfileAsync(
     azure_default_role_arn: answers.defaultRoleArn as string,
     azure_default_duration_hours: answers.defaultDurationHours as string,
     azure_default_remember_me: (answers.rememberMe as string) === "true",
+    chrome_data_by_azure_tenant: (answers.chromeDataByAzureTenant as string) === "true",
   });
 
   console.log("Profile saved.");
