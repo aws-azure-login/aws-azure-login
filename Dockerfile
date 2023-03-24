@@ -1,4 +1,4 @@
-FROM node:14-slim
+FROM node:14-slim as base
 
 # Install Puppeteer dependencies: https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch
 RUN apt-get update \
@@ -36,19 +36,33 @@ RUN apt-get update \
    libxtst6 \
    ca-certificates \
    fonts-liberation \
-   libappindicator1 \
    libnss3 \
+   chromium \
    lsb-release \
    xdg-utils \
    wget \
    && apt-get -q -y clean \
    && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y libgbm1
+
+FROM base as build
+
+COPY . /aws-azure-login/
+
+RUN cd /aws-azure-login \
+   && yarn install \
+   && yarn build
+
+FROM base
+
 COPY package.json yarn.lock /aws-azure-login/
+
+RUN ln -s /usr/bin/chromium /usr/bin/chromium-browser
 
 RUN cd /aws-azure-login \
    && yarn install --production
 
-COPY lib /aws-azure-login/lib
+COPY --from=build /aws-azure-login/lib /aws-azure-login/lib
 
 ENTRYPOINT ["node", "/aws-azure-login/lib", "--no-sandbox"]
