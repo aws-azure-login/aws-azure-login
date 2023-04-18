@@ -3,6 +3,7 @@ import Bluebird from "bluebird";
 import inquirer, { QuestionCollection, Question } from "inquirer";
 import zlib from "zlib";
 import AWS from "aws-sdk";
+import { STS } from "@aws-sdk/client-sts";
 import cheerio from "cheerio";
 import { v4 } from "uuid";
 import puppeteer, { HTTPRequest } from "puppeteer";
@@ -1034,15 +1035,14 @@ export const login = {
       });
     }
 
-    const sts = new AWS.STS();
+    const sts = new STS();
     const res = await sts
       .assumeRoleWithSAML({
         PrincipalArn: role.principalArn,
         RoleArn: role.roleArn,
         SAMLAssertion: assertion,
         DurationSeconds: Math.round(durationHours * 60 * 60),
-      })
-      .promise();
+      });
 
     if (!res.Credentials) {
       debug("Unable to get security credentials from AWS");
