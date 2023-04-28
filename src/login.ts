@@ -447,7 +447,8 @@ export const login = {
     awsNoVerifySsl: boolean,
     enableChromeSeamlessSso: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    credentialProcess: boolean
   ): Promise<void> {
     let headless, cliProxy;
     if (mode === "cli") {
@@ -464,6 +465,9 @@ export const login = {
     }
 
     const profile = await this._loadProfileAsync(profileName);
+    if (!credentialProcess) {
+      console.log(`Logging in with profile '${profileName}'...`);
+    }
     let assertionConsumerServiceURL = AWS_SAML_ENDPOINT;
     if (profile.region && profile.region.startsWith("us-gov")) {
       assertionConsumerServiceURL = AWS_GOV_SAML_ENDPOINT;
@@ -472,7 +476,9 @@ export const login = {
       assertionConsumerServiceURL = AWS_CN_SAML_ENDPOINT;
     }
 
-    console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
+    if (!credentialProcess) {
+      console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
+    }
 
     const loginUrl = await this._createLoginUrlAsync(
       profile.azure_app_id_uri,
@@ -500,7 +506,10 @@ export const login = {
       profile.azure_default_role_arn,
       profile.azure_default_duration_hours
     );
-    await this._assumeRoleAsync(
+    if (!credentialProcess) {
+      console.log(`Assuming role ${role.roleArn}`);
+    }
+    const creds = await this._assumeRoleAsync(
       profileName,
       samlResponse,
       role,
@@ -508,6 +517,25 @@ export const login = {
       awsNoVerifySsl,
       profile.region
     );
+    if (!creds) {
+      return
+    }
+    if (credentialProcess) {
+      console.log(JSON.stringify({
+        "Version": 1,
+        "AccessKeyId": creds.AccessKeyId,
+        "SecretAccessKey": creds.SecretAccessKey,
+        "SessionToken": creds.SessionToken,
+        "Expiration": creds.Expiration.toISOString()
+      }));
+    } else {
+      await awsConfig.setProfileCredentialsAsync(profileName, {
+        aws_access_key_id: creds.AccessKeyId,
+        aws_secret_access_key: creds.SecretAccessKey,
+        aws_session_token: creds.SessionToken,
+        aws_expiration: creds.Expiration.toISOString(),
+      });
+    }
   },
 
   async loginAll(
@@ -519,7 +547,8 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     forceRefresh: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    credentialProcess: boolean
   ): Promise<void> {
     const profiles = await awsConfig.getAllProfileNames();
 
@@ -547,7 +576,8 @@ export const login = {
         awsNoVerifySsl,
         enableChromeSeamlessSso,
         noDisableExtensions,
-        disableGpu
+        disableGpu,
+        credentialProcess
       );
     }
   },
@@ -602,7 +632,6 @@ export const login = {
         `Profile '${profileName}' is not configured properly.`
       );
 
-    console.log(`Logging in with profile '${profileName}'...`);
     return profile;
   },
 
@@ -1008,8 +1037,7 @@ export const login = {
     durationHours: number,
     awsNoVerifySsl: boolean,
     region: string | undefined
-  ): Promise<void> {
-    console.log(`Assuming role ${role.roleArn}`);
+  ): Promise<AWS.STS.Credentials | null> {
     if (process.env.https_proxy) {
       AWS.config.update({
         httpOptions: {
@@ -1046,14 +1074,9 @@ export const login = {
 
     if (!res.Credentials) {
       debug("Unable to get security credentials from AWS");
-      return;
+      return null;
     }
 
-    await awsConfig.setProfileCredentialsAsync(profileName, {
-      aws_access_key_id: res.Credentials.AccessKeyId,
-      aws_secret_access_key: res.Credentials.SecretAccessKey,
-      aws_session_token: res.Credentials.SessionToken,
-      aws_expiration: res.Credentials.Expiration.toISOString(),
-    });
+    return res.Credentials;
   },
 };

@@ -53,6 +53,10 @@ program
     "--disable-gpu",
     "Tell Puppeteer to pass the --disable-gpu flag to Chromium"
   )
+  .option(
+    "--credential-process",
+    "Enable JSON output in the appropriate format to be usable as a Credential Process"
+  )
   .parse(process.argv);
 
 const options = program.opts();
@@ -70,6 +74,7 @@ const enableChromeSeamlessSso = !!options.enableChromeSeamlessSso;
 const forceRefresh = !!options.forceRefresh;
 const noDisableExtensions = !options.disableExtensions;
 const disableGpu = !!options.disableGpu;
+const credentialProcess = !!options.credentialProcess;
 
 Promise.resolve()
   .then(() => {
@@ -83,7 +88,8 @@ Promise.resolve()
         enableChromeSeamlessSso,
         forceRefresh,
         noDisableExtensions,
-        disableGpu
+        disableGpu,
+        credentialProcess
       );
     }
 
@@ -97,7 +103,8 @@ Promise.resolve()
       awsNoVerifySsl,
       enableChromeSeamlessSso,
       noDisableExtensions,
-      disableGpu
+      disableGpu,
+      credentialProcess
     );
   })
   .catch((err: Error) => {
