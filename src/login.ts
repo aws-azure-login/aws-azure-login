@@ -447,7 +447,8 @@ export const login = {
     awsNoVerifySsl: boolean,
     enableChromeSeamlessSso: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    incognito: boolean
   ): Promise<void> {
     let headless, cliProxy;
     if (mode === "cli") {
@@ -491,7 +492,8 @@ export const login = {
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
       noDisableExtensions,
-      disableGpu
+      disableGpu,
+      incognito
     );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
@@ -519,7 +521,8 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     forceRefresh: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    incognito: boolean
   ): Promise<void> {
     const profiles = await awsConfig.getAllProfileNames();
 
@@ -547,7 +550,8 @@ export const login = {
         awsNoVerifySsl,
         enableChromeSeamlessSso,
         noDisableExtensions,
-        disableGpu
+        disableGpu,
+        incognito
       );
     }
   },
@@ -680,7 +684,8 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    incognito: boolean
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
@@ -713,6 +718,10 @@ export const login = {
 
       if (disableGpu) {
         args.push("--disable-gpu");
+      }
+
+      if(incognito) {
+        args.push("--incognito");
       }
 
       browser = await puppeteer.launch({
