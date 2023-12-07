@@ -472,6 +472,9 @@ export const login = {
     if (profile.region && profile.region.startsWith("cn-")) {
       assertionConsumerServiceURL = AWS_CN_SAML_ENDPOINT;
     }
+    if (profile.azure_assertion_consumer_service_url) {
+      assertionConsumerServiceURL = profile.azure_assertion_consumer_service_url
+    }
 
     console.log("Using AWS SAML endpoint", assertionConsumerServiceURL);
 

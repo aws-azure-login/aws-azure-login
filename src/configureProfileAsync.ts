@@ -22,6 +22,12 @@ export async function configureProfileAsync(
       default: profile && profile.azure_app_id_uri,
     },
     {
+      name: "assertionConsumerServiceURL",
+      message: "Azure Assertion Consumer ID URI:",
+      validate: (input): boolean => !!input,
+      default: profile && profile.azure_assertion_consumer_service_url,
+    },
+    {
       name: "username",
       message: "Default Username:",
       default: profile && profile.azure_default_username,
