@@ -15,7 +15,6 @@ import proxy from "proxy-agent";
 import { paths } from "./paths";
 import { mkdirp } from "mkdirp";
 import { Agent } from "https";
-// import { NodeHttpHandler } from "@aws-sdk/node-http-handler";
 const { NodeHttpHandler } = require("@smithy/node-http-handler");
 
 const debug = _debug("aws-azure-login");
