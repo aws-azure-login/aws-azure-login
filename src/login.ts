@@ -6,7 +6,7 @@ import { STS, STSClientConfig } from "@aws-sdk/client-sts";
 import cheerio from "cheerio";
 import { v4 } from "uuid";
 import * as puppeteer from "puppeteer";
-import { HTTPRequest } from  "puppeteer";
+import { HTTPRequest } from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
@@ -50,7 +50,7 @@ const states = [
       page: puppeteer.Page,
       _selected: puppeteer.ElementHandle,
       noPrompt: boolean,
-      defaultUsername: string
+      defaultUsername: string,
     ): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
@@ -59,7 +59,7 @@ const states = [
         const errorMessage = await page.evaluate(
           // eslint-disable-next-line
           (err) => err.textContent,
-          error
+          error,
         );
         console.log(errorMessage);
       }
@@ -115,7 +115,7 @@ const states = [
       await Promise.race([
         page.waitForSelector(
           `input[name=loginfmt].has-error,input[name=loginfmt].moveOffScreen`,
-          { timeout: 60000 }
+          { timeout: 60000 },
         ),
         (async (): Promise<void> => {
           await Bluebird.delay(1000);
@@ -137,7 +137,7 @@ const states = [
       const aadTileMessage: string | null | undefined = await page.evaluate(
         // eslint-disable-next-line
         (a) => a?.textContent,
-        aadTile
+        aadTile,
       );
 
       const msaTile = await page.$("#msaTileTitle");
@@ -145,7 +145,7 @@ const states = [
       const msaTileMessage: string | null | undefined = await page.evaluate(
         // eslint-disable-next-line
         (m) => m?.textContent,
-        msaTile
+        msaTile,
       );
 
       const accounts = [
@@ -161,7 +161,7 @@ const states = [
       } else {
         debug("Asking user to choose account");
         console.log(
-          "It looks like this Username is used with more than one account from Microsoft. Which one do you want to use?"
+          "It looks like this Username is used with more than one account from Microsoft. Which one do you want to use?",
         );
         const answers = await inquirer.prompt([
           {
@@ -201,7 +201,7 @@ const states = [
       debug("Printing the message displayed");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const messageElement = await page.$(
-        "#idDiv_RemoteNGC_PollingDescription"
+        "#idDiv_RemoteNGC_PollingDescription",
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const codeElement = await page.$("#idRemoteNGC_DisplaySign");
@@ -209,7 +209,7 @@ const states = [
       const message = await page.evaluate(
         // eslint-disable-next-line
         (el) => el?.textContent,
-        messageElement
+        messageElement,
       );
       console.log(message);
       debug("Printing the auth code");
@@ -217,7 +217,7 @@ const states = [
       const authCode = await page.evaluate(
         // eslint-disable-next-line
         (el) => el?.textContent,
-        codeElement
+        codeElement,
       );
       console.log(authCode);
       debug("Waiting for response");
@@ -235,7 +235,7 @@ const states = [
       _selected: puppeteer.ElementHandle,
       noPrompt: boolean,
       _defaultUsername: string,
-      defaultPassword: string
+      defaultPassword: string,
     ): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
@@ -244,7 +244,7 @@ const states = [
         const errorMessage = await page.evaluate(
           // eslint-disable-next-line
           (err) => err.textContent,
-          error
+          error,
         );
         console.log(errorMessage);
         defaultPassword = ""; // Password error. Unset the default and allow user to enter it.
@@ -285,27 +285,27 @@ const states = [
     selector: `#idDiv_SAOTCAS_Description`,
     async handler(
       page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      selected: puppeteer.ElementHandle,
     ): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
         (description) => description.textContent,
-        selected
+        selected,
       );
       console.log(descriptionMessage);
       debug("Checking if authentication code is displayed");
       // eslint-disable-next-line
       if (descriptionMessage?.includes("enter the number shown to sign in")) {
         const authenticationCodeElement = await page.$(
-          "#idRichContext_DisplaySign"
+          "#idRichContext_DisplaySign",
         );
         debug("Reading the authentication code");
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const authenticationCode = await page.evaluate(
           // eslint-disable-next-line
           (d) => d?.textContent,
-          authenticationCodeElement
+          authenticationCodeElement,
         );
         debug("Printing the authentication code to console");
         console.log(authenticationCode);
@@ -322,13 +322,13 @@ const states = [
     selector: `#idDiv_SAASDS_Description,#idDiv_SAASTO_Description`,
     async handler(
       page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      selected: puppeteer.ElementHandle,
     ): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
         (description) => description.textContent,
-        selected
+        selected,
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       throw new CLIError(descriptionMessage || "Unknown error");
@@ -345,7 +345,7 @@ const states = [
         const errorMessage = await page.evaluate(
           // eslint-disable-next-line
           (err) => err.textContent,
-          error
+          error,
         );
         console.log(errorMessage);
       } else {
@@ -354,7 +354,7 @@ const states = [
         const descriptionMessage = await page.evaluate(
           // eslint-disable-next-line
           (d) => d?.textContent,
-          description
+          description,
         );
         console.log(descriptionMessage);
       }
@@ -385,7 +385,7 @@ const states = [
       await Promise.race([
         page.waitForSelector(
           `input[name=otc].has-error,input[name=otc].moveOffScreen`,
-          { timeout: 60000 }
+          { timeout: 60000 },
         ),
         (async (): Promise<void> => {
           await Bluebird.delay(1000);
@@ -406,7 +406,7 @@ const states = [
       _noPrompt: boolean,
       _defaultUsername: string,
       _defaultPassword: string | undefined,
-      rememberMe: boolean
+      rememberMe: boolean,
     ): Promise<void> {
       if (rememberMe) {
         debug("Clicking remember me button");
@@ -425,13 +425,13 @@ const states = [
     selector: "#service_exception_message",
     async handler(
       page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      selected: puppeteer.ElementHandle,
     ): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
         (description) => description.textContent,
-        selected
+        selected,
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       throw new CLIError(descriptionMessage || "Unknown error");
@@ -449,7 +449,7 @@ export const login = {
     awsNoVerifySsl: boolean,
     enableChromeSeamlessSso: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
   ): Promise<void> {
     let headless, cliProxy;
     if (mode === "cli") {
@@ -479,7 +479,7 @@ export const login = {
     const loginUrl = await this._createLoginUrlAsync(
       profile.azure_app_id_uri,
       profile.azure_tenant_id,
-      assertionConsumerServiceURL
+      assertionConsumerServiceURL,
     );
     const samlResponse = await this._performLoginAsync(
       loginUrl,
@@ -493,14 +493,14 @@ export const login = {
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
       noDisableExtensions,
-      disableGpu
+      disableGpu,
     );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
       roles,
       noPrompt,
       profile.azure_default_role_arn,
-      profile.azure_default_duration_hours
+      profile.azure_default_duration_hours,
     );
     await this._assumeRoleAsync(
       profileName,
@@ -508,7 +508,7 @@ export const login = {
       role,
       durationHours,
       awsNoVerifySsl,
-      profile.region
+      profile.region,
     );
   },
 
@@ -521,7 +521,7 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     forceRefresh: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
   ): Promise<void> {
     const profiles = await awsConfig.getAllProfileNames();
 
@@ -549,7 +549,7 @@ export const login = {
         awsNoVerifySsl,
         enableChromeSeamlessSso,
         noDisableExtensions,
-        disableGpu
+        disableGpu,
       );
     }
   },
@@ -589,7 +589,7 @@ export const login = {
     const profile = await awsConfig.getProfileConfigAsync(profileName);
     if (!profile)
       throw new CLIError(
-        `Unknown profile '${profileName}'. You must configure it first with --configure.`
+        `Unknown profile '${profileName}'. You must configure it first with --configure.`,
       );
 
     const env = this._loadProfileFromEnv();
@@ -601,7 +601,7 @@ export const login = {
 
     if (!profile.azure_tenant_id || !profile.azure_app_id_uri)
       throw new CLIError(
-        `Profile '${profileName}' is not configured properly.`
+        `Profile '${profileName}' is not configured properly.`,
       );
 
     console.log(`Logging in with profile '${profileName}'...`);
@@ -619,7 +619,7 @@ export const login = {
   _createLoginUrlAsync(
     appIdUri: string,
     tenantId: string,
-    assertionConsumerServiceURL: string
+    assertionConsumerServiceURL: string,
   ): Promise<string> {
     debug("Generating UUID for SAML request");
     const id = v4();
@@ -644,7 +644,7 @@ export const login = {
         const samlBase64 = samlBuffer.toString("base64");
 
         const url = `https://login.microsoftonline.com/${tenantId}/saml2?SAMLRequest=${encodeURIComponent(
-          samlBase64
+          samlBase64,
         )}`;
         debug("Created login URL", url);
 
@@ -682,7 +682,7 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
@@ -698,7 +698,7 @@ export const login = {
       if (enableChromeSeamlessSso)
         args.push(
           `--auth-server-whitelist=${AZURE_AD_SSO}`,
-          `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
+          `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`,
         );
       if (rememberMe) {
         await mkdirp(paths.chromium);
@@ -805,7 +805,7 @@ export const login = {
                 debug(
                   `Error when running state "${
                     state.name
-                  }". ${err.toString()}. Retrying...`
+                  }". ${err.toString()}. Retrying...`,
                 );
               }
               break;
@@ -823,7 +823,7 @@ export const login = {
                   noPrompt,
                   defaultUsername,
                   defaultPassword,
-                  rememberMe
+                  rememberMe,
                 ),
               ]);
 
@@ -841,7 +841,7 @@ export const login = {
               const path = "aws-azure-login-unrecognized-state.png";
               await page.screenshot({ path });
               throw new CLIError(
-                `Unable to recognize page state! A screenshot has been dumped to ${path}. If this problem persists, try running with --mode=gui or --mode=debug`
+                `Unable to recognize page state! A screenshot has been dumped to ${path}. If this problem persists, try running with --mode=gui or --mode=debug`,
               );
             }
 
@@ -893,7 +893,7 @@ export const login = {
     debug("Looking for role SAML attribute");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const roles: Role[] = saml(
-      "Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue"
+      "Attribute[Name='https://aws.amazon.com/SAML/Attributes/Role']>AttributeValue",
     )
       .map(function () {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -927,7 +927,7 @@ export const login = {
     roles: Role[],
     noPrompt: boolean,
     defaultRoleArn: string,
-    defaultDurationHours: string
+    defaultDurationHours: string,
   ): Promise<{
     role: Role;
     durationHours: number;
@@ -1009,7 +1009,7 @@ export const login = {
     role: Role,
     durationHours: number,
     awsNoVerifySsl: boolean,
-    region: string | undefined
+    region: string | undefined,
   ): Promise<void> {
     console.log(`Assuming role ${role.roleArn}`);
     let stsOptions: STSClientConfig = {};

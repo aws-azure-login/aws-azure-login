@@ -2,7 +2,7 @@ import inquirer, { Question } from "inquirer";
 import { awsConfig } from "./awsConfig";
 
 export async function configureProfileAsync(
-  profileName: string
+  profileName: string,
 ): Promise<void> {
   console.log(`Configuring profile '${profileName}'`);
 
