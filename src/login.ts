@@ -501,6 +501,7 @@ export const login = {
       profile.azure_default_role_arn,
       profile.azure_default_duration_hours
     );
+
     await this._assumeRoleAsync(
       profileName,
       samlResponse,
@@ -586,6 +587,7 @@ export const login = {
   // Load the profile
   async _loadProfileAsync(profileName: string): Promise<ProfileConfig> {
     const profile = await awsConfig.getProfileConfigAsync(profileName);
+    
     if (!profile)
       throw new CLIError(
         `Unknown profile '${profileName}'. You must configure it first with --configure.`
@@ -1008,9 +1010,9 @@ export const login = {
     role: Role,
     durationHours: number,
     awsNoVerifySsl: boolean,
-    region: string | undefined
+    region: string 
   ): Promise<void> {
-    console.log(`Assuming role ${role.roleArn}`);
+    console.log(`Assuming role ${role.roleArn} in region ${region}...`);
     let stsOptions: STSClientConfig = {};
     if (process.env.https_proxy) {
       stsOptions = {
