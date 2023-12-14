@@ -55,6 +55,11 @@ export async function configureProfileAsync(
         return "Duration hours must be between 0 and 12";
       },
     },
+    {
+      name: "region",
+      message: "AWS Region:",
+      default: profile && profile.region,
+    },
   ];
 
   const answers = await inquirer.prompt(questions);
@@ -66,6 +71,7 @@ export async function configureProfileAsync(
     azure_default_role_arn: answers.defaultRoleArn as string,
     azure_default_duration_hours: answers.defaultDurationHours as string,
     azure_default_remember_me: (answers.rememberMe as string) === "true",
+    region: answers.region as string,
   });
 
   console.log("Profile saved.");

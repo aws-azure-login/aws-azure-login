@@ -19,7 +19,7 @@ export interface ProfileConfig {
   azure_default_password?: string;
   azure_default_role_arn: string;
   azure_default_duration_hours: string;
-  region?: string;
+  region: string;
   azure_default_remember_me: boolean;
   [key: string]: unknown;
 }
@@ -29,6 +29,10 @@ interface ProfileCredentials {
   aws_secret_access_key: string;
   aws_session_token: string;
   aws_expiration: string;
+}
+
+interface SaveData {
+  [key: string]: ProfileConfig | ProfileCredentials;
 }
 
 export const awsConfig = {
@@ -149,7 +153,7 @@ export const awsConfig = {
     });
   },
 
-  async _saveAsync(type: string, data: unknown): Promise<void> {
+  async _saveAsync(type: string, data: SaveData): Promise<void> {
     if (!paths[type]) throw new Error(`Unknown config type: '${type}'`);
     if (!data) throw new Error(`You must provide data for saving.`);
 
