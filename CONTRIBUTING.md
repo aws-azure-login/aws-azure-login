@@ -2,21 +2,21 @@
 
 ## Get started
 
-This project is written in TypeScript and is using prettier and eslint for code formatting. You need node v14.
+This project is written in TypeScript and is using prettier and eslint for code formatting. You need node v18.
 
-1. Install node v14. I recommend installing that with nvm: https://github.com/nvm-sh/nvm
-
-```sh
-nvm install 14
-```
-
-2. Make node v14 default
+1. Install node v18. I recommend installing that with nvm: https://github.com/nvm-sh/nvm
 
 ```sh
-nvm alias default 14
+nvm install 18
 ```
 
-3. Open a new terminal and verify node version (should return v14.X.X)
+2. Make node v18 default
+
+```sh
+nvm alias default 18
+```
+
+3. Open a new terminal and verify node version (should return v18.X.X)
 
 ```sh
 node -v
