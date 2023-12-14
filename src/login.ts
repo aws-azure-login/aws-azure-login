@@ -587,7 +587,7 @@ export const login = {
   // Load the profile
   async _loadProfileAsync(profileName: string): Promise<ProfileConfig> {
     const profile = await awsConfig.getProfileConfigAsync(profileName);
-    
+
     if (!profile)
       throw new CLIError(
         `Unknown profile '${profileName}'. You must configure it first with --configure.`
@@ -1010,7 +1010,7 @@ export const login = {
     role: Role,
     durationHours: number,
     awsNoVerifySsl: boolean,
-    region: string 
+    region: string
   ): Promise<void> {
     console.log(`Assuming role ${role.roleArn} in region ${region}...`);
     let stsOptions: STSClientConfig = {};
