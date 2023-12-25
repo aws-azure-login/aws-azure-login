@@ -1,6 +1,6 @@
 {
-  "name": "aws-azure-login",
-  "version": "3.6.3",
+  "name": "aws-azure-login-cli",
+  "version": "3.6.5",
   "description": "Use Azure AD SSO to log into the AWS CLI.",
   "main": "index.js",
   "author": {
@@ -10,7 +10,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aws-azure-login/aws-azure-login.git"
+    "url": "git+https://github.com/aws-azure-login/aws-azure-login.git"
   },
   "bugs": "https://github.com/aws-azure-loginc/aws-azure-login/issues",
   "engines": {
@@ -29,8 +29,10 @@
     "test": "yarn eslint && yarn prettier:check"
   },
   "dependencies": {
-    "@aws-sdk/client-sts": "^3.477.0",
+    "@aws-sdk/client-sts": "^3.478.0",
     "@smithy/node-http-handler": "^2.2.1",
+    "@types/mkdirp": "^2.0.0",
+    "@types/uuid": "^9.0.7",
     "bluebird": "^3.7.2",
     "cheerio": "^1.0.0-rc.10",
     "commander": "^9.5.0",
@@ -38,10 +40,10 @@
     "ini": "^3.0.1",
     "inquirer": "^8.2.6",
     "lodash": "^4.17.20",
-    "mkdirp": "^1.0.4",
+    "mkdirp": "^3.0.1",
     "proxy-agent": "^6.3.1",
-    "puppeteer": "^13.7.0",
-    "uuid": "^8.3.2"
+    "puppeteer": "^21.6.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.42",
@@ -50,9 +52,7 @@
     "@types/ini": "^1.3.34",
     "@types/inquirer": "^8.2.10",
     "@types/lodash": "^4.14.202",
-    "@types/mkdirp": "^1.0.1",
     "@types/node": "^20.10.4",
-    "@types/uuid": "^8.3.0",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "eslint": "^8.56.0",

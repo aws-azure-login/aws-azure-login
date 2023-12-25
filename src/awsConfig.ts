@@ -1,7 +1,7 @@
 import ini from "ini";
 import _debug from "debug";
 import { paths } from "./paths";
-import mkdirp from "mkdirp";
+import { mkdirp } from "mkdirp";
 import fs from "fs";
 import util from "util";
 

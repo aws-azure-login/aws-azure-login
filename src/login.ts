@@ -5,14 +5,15 @@ import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
 import cheerio from "cheerio";
 import { v4 } from "uuid";
-import puppeteer, { HTTPRequest } from "puppeteer";
+import * as puppeteer from "puppeteer";
+import { HTTPRequest } from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
 import { awsConfig, ProfileConfig } from "./awsConfig";
 import proxy from "proxy-agent";
 import { paths } from "./paths";
-import mkdirp from "mkdirp";
+import { mkdirp } from "mkdirp";
 import { Agent } from "https";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
@@ -135,7 +136,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const aadTileMessage: string = await page.evaluate(
         // eslint-disable-next-line
-        (a) => a.textContent,
+        (a: any) => a.textContent,
         aadTile
       );
 
@@ -143,7 +144,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const msaTileMessage: string = await page.evaluate(
         // eslint-disable-next-line
-        (m) => m.textContent,
+        (m: any) => m.textContent,
         msaTile
       );
 
@@ -207,7 +208,7 @@ const states = [
       // eslint-disable-next-line
       const message = await page.evaluate(
         // eslint-disable-next-line
-        (el) => el.textContent,
+        (el: any) => el.textContent,
         messageElement
       );
       console.log(message);
@@ -215,7 +216,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const authCode = await page.evaluate(
         // eslint-disable-next-line
-        (el) => el.textContent,
+        (el: any) => el.textContent,
         codeElement
       );
       console.log(authCode);
@@ -289,7 +290,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
-        (description) => description.textContent,
+        (description: any) => description.textContent,
         selected
       );
       console.log(descriptionMessage);
@@ -303,7 +304,7 @@ const states = [
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const authenticationCode = await page.evaluate(
           // eslint-disable-next-line
-          (d) => d.textContent,
+          (d: any) => d.textContent,
           authenticationCodeElement
         );
         debug("Printing the authentication code to console");
@@ -326,7 +327,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
-        (description) => description.textContent,
+        (description: any) => description.textContent,
         selected
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -352,7 +353,7 @@ const states = [
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const descriptionMessage = await page.evaluate(
           // eslint-disable-next-line
-          (d) => d.textContent,
+          (d: any) => d.textContent,
           description
         );
         console.log(descriptionMessage);
@@ -429,7 +430,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
-        (description) => description.textContent,
+        (description: any) => description.textContent,
         selected
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -452,13 +453,13 @@ export const login = {
   ): Promise<void> {
     let headless, cliProxy;
     if (mode === "cli") {
-      headless = true;
+      headless = 'new';
       cliProxy = true;
     } else if (mode === "gui") {
-      headless = false;
+      headless = 'new';
       cliProxy = false;
     } else if (mode === "debug") {
-      headless = false;
+      headless = 'new';
       cliProxy = true;
     } else {
       throw new CLIError("Invalid mode");
@@ -657,7 +658,7 @@ export const login = {
   /**
    * Perform the login using Chrome.
    * @param {string} url - The login URL
-   * @param {boolean} headless - True to hide the GUI, false to show it.
+   * @param {string} headless - True to hide the GUI, false to show it.
    * @param {boolean} disableSandbox - True to disable the Puppeteer sandbox.
    * @param {boolean} cliProxy - True to proxy input/output through the CLI, false to leave it in the GUI
    * @param {bool} [noPrompt] - Enable skipping of user prompting
@@ -673,7 +674,7 @@ export const login = {
    */
   async _performLoginAsync(
     url: string,
-    headless: boolean,
+    headless: string,
     disableSandbox: boolean,
     cliProxy: boolean,
     noPrompt: boolean,
@@ -690,9 +691,7 @@ export const login = {
     let browser: puppeteer.Browser | undefined;
 
     try {
-      const args = headless
-        ? []
-        : [`--app=${url}`, `--window-size=${WIDTH},${HEIGHT}`];
+      const args = headless === 'new' ? [] : [`--app=${url}`, `--window-size=${WIDTH},${HEIGHT}`];
       if (disableSandbox) args.push("--no-sandbox");
       if (enableChromeNetworkService)
         args.push("--enable-features=NetworkService");
@@ -719,7 +718,7 @@ export const login = {
       }
 
       browser = await puppeteer.launch({
-        headless,
+        headless : headless === 'new' ? 'new' : Boolean(headless),
         args,
         ignoreDefaultArgs,
       });
