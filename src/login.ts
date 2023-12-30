@@ -19,8 +19,8 @@ import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 const debug = _debug("aws-azure-login");
 
-const WIDTH = 425;
-const HEIGHT = 550;
+const WIDTH = 380;
+const HEIGHT = 640;
 const DELAY_ON_UNRECOGNIZED_PAGE = 1000;
 const MAX_UNRECOGNIZED_PAGE_DELAY = 30 * 1000;
 
@@ -483,6 +483,7 @@ export const login = {
     );
     const samlResponse = await this._performLoginAsync(
       loginUrl,
+      mode,
       headless,
       disableSandbox,
       cliProxy,
@@ -674,6 +675,7 @@ export const login = {
    */
   async _performLoginAsync(
     url: string,
+    mode: string,
     headless: string,
     disableSandbox: boolean,
     cliProxy: boolean,
@@ -717,8 +719,16 @@ export const login = {
         args.push("--disable-gpu");
       }
 
+      let headlessValue: string | boolean = '';
+
+      if (mode === 'cli') {
+        headlessValue = 'new';
+      } else if (mode === 'gui') {
+        headlessValue = false;
+        args.push(`--window-size=${WIDTH},${HEIGHT}`)
+      }
       browser = await puppeteer.launch({
-        headless : headless === 'new' ? 'new' : Boolean(headless),
+        headless : headlessValue === 'new' ? 'new' : Boolean(false),
         args,
         ignoreDefaultArgs,
       });
