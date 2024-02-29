@@ -35,11 +35,11 @@
     "cheerio": "^1.0.0-rc.10",
     "commander": "^9.2.0",
     "debug": "^4.3.1",
+    "hpagent": "^1.2.0",
     "ini": "^3.0.0",
     "inquirer": "^8.1.1",
     "lodash": "^4.17.20",
     "mkdirp": "^1.0.4",
-    "proxy-agent": "^6.3.1",
     "puppeteer": "^13.6.0",
     "uuid": "^8.3.2"
   },
