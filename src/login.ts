@@ -448,7 +448,8 @@ export const login = {
     awsNoVerifySsl: boolean,
     enableChromeSeamlessSso: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    chromiumExecutablePath: string | undefined
   ): Promise<void> {
     let headless, cliProxy;
     if (mode === "cli") {
@@ -492,7 +493,8 @@ export const login = {
       enableChromeSeamlessSso,
       profile.azure_default_remember_me,
       noDisableExtensions,
-      disableGpu
+      disableGpu,
+      chromiumExecutablePath
     );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
@@ -521,7 +523,8 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     forceRefresh: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    chromiumExecutablePath: string | undefined
   ): Promise<void> {
     const profiles = await awsConfig.getAllProfileNames();
 
@@ -549,7 +552,8 @@ export const login = {
         awsNoVerifySsl,
         enableChromeSeamlessSso,
         noDisableExtensions,
-        disableGpu
+        disableGpu,
+        chromiumExecutablePath
       );
     }
   },
@@ -668,6 +672,7 @@ export const login = {
    * @param {bool} [rememberMe] - Enable remembering the session
    * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
    * @param {bool} [disableGpu] - Disables GPU Acceleration
+   * @param {string} chromiumExecutablePath - Optional path to the Chromium executable to be used by Puppeteer
    * @returns {Promise.<string>} The SAML response.
    * @private
    */
@@ -683,7 +688,8 @@ export const login = {
     enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
     noDisableExtensions: boolean,
-    disableGpu: boolean
+    disableGpu: boolean,
+    chromiumExecutablePath: string | undefined
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
@@ -722,6 +728,7 @@ export const login = {
         headless,
         args,
         ignoreDefaultArgs,
+        executablePath: chromiumExecutablePath || undefined,
       });
 
       // Wait for a bit as sometimes the browser isn't ready.
