@@ -83,16 +83,24 @@ You'll need your [Azure Tenant ID and the App ID URI](#getting-your-tenant-id-an
 
 ##### GovCloud Support
 
-To use aws-azure-login with AWS GovCloud, set the `region` profile property in your ~/.aws/config to the one of the GovCloud regions:
+To use aws-azure-login with AWS GovCloud, set the `region` profile property to one of the following:
 
 - us-gov-west-1
 - us-gov-east-1
 
+using a command like the following
+
+    aws configure set region us-gov-west-1
+
 ##### China Region Support
 
-To use aws-azure-login with AWS China Cloud, set the `region` profile property in your ~/.aws/config to the China region:
+To use aws-azure-login with AWS China Cloud, set the `region` to the China region:
 
 - cn-north-1
+
+using a command like the following
+
+    aws configure set region cn-north-1
 
 #### Staying logged in, skip username/password for future logins
 
