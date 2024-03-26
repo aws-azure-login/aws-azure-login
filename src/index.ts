@@ -53,6 +53,10 @@ program
     "--disable-gpu",
     "Tell Puppeteer to pass the --disable-gpu flag to Chromium"
   )
+  .option(
+    "--incognito",
+    "Tell Puppeteer to pass the --incognito flag to Chromium"
+  )
   .parse(process.argv);
 
 const options = program.opts();
@@ -70,6 +74,7 @@ const enableChromeSeamlessSso = !!options.enableChromeSeamlessSso;
 const forceRefresh = !!options.forceRefresh;
 const noDisableExtensions = !options.disableExtensions;
 const disableGpu = !!options.disableGpu;
+const incognito = !!options.incognito;
 
 Promise.resolve()
   .then(() => {
@@ -83,7 +88,8 @@ Promise.resolve()
         enableChromeSeamlessSso,
         forceRefresh,
         noDisableExtensions,
-        disableGpu
+        disableGpu,
+        incognito
       );
     }
 
@@ -97,7 +103,8 @@ Promise.resolve()
       awsNoVerifySsl,
       enableChromeSeamlessSso,
       noDisableExtensions,
-      disableGpu
+      disableGpu,
+      incognito
     );
   })
   .catch((err: Error) => {
