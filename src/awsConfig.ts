@@ -116,13 +116,18 @@ export const awsConfig = {
     await this._saveAsync("credentials", credentials);
   },
 
-  async getAllProfileNames(): Promise<string[] | undefined> {
+  async getAllProfileNames(
+    profileMatcher: string
+  ): Promise<string[] | undefined> {
     debug(`Getting all configured profiles from config.`);
+    const re = new RegExp(profileMatcher);
     const config =
       (await this._loadAsync<{ [key: string]: ProfileConfig }>("config")) || {};
 
     const profiles = Object.keys(config).map(function (e) {
       return e.replace("profile ", "");
+    }).filter(function (e) {
+      return e.match(re);
     });
     debug(`Received profiles: ${profiles.toString()}`);
     return profiles;
