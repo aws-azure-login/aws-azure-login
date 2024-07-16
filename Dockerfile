@@ -1,4 +1,4 @@
-FROM node:14-slim
+FROM node:18-slim
 
 # Install Puppeteer dependencies: https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch
 RUN apt-get update \
@@ -39,13 +39,16 @@ RUN apt-get update \
    lsb-release \
    wget \
    xdg-utils \
+   chromium \
    && apt-get -q -y clean \
    && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
+RUN ln -s /usr/bin/chromium /usr/bin/chromium-browser
+
 COPY package.json yarn.lock /aws-azure-login/
 
-RUN cd /aws-azure-login \
-   && yarn install --production
+WORKDIR /aws-azure-login
+RUN yarn install --production
 
 COPY lib /aws-azure-login/lib
 
