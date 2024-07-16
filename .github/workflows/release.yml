@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 18
@@ -19,7 +19,7 @@ jobs:
       - run: yarn build
       - uses: actions/upload-artifact@v2
         with:
-          name: lib
+          name: lib-${{ github.run_id }}
           path: lib
 
   publish-npm:
@@ -27,9 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
-          name: lib
+          name: lib-${{ github.run_id }}
           path: lib
       - uses: actions/setup-node@v4
         with:
@@ -43,10 +43,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: lib
+          name: lib-${{ github.run_id }}
           path: lib
       - name: Publish to Registry
         uses: elgohr/Publish-Docker-Github-Action@master
@@ -61,10 +61,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/download-artifact@v2
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: lib
+          name: lib-${{ github.run_id }}
           path: lib
       - uses: snapcore/action-build@v1
         id: build
