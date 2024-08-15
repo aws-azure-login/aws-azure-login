@@ -3,7 +3,7 @@ import Bluebird from "bluebird";
 import inquirer, { QuestionCollection, Question } from "inquirer";
 import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
-import cheerio from "cheerio";
+import * as cheerio from "cheerio";
 import { v4 } from "uuid";
 import puppeteer, { HTTPRequest } from "puppeteer";
 import querystring from "querystring";
