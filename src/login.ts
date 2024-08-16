@@ -3,7 +3,7 @@ import Bluebird from "bluebird";
 import inquirer, { QuestionCollection, Question } from "inquirer";
 import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
-import * as cheerio from "cheerio";
+import { load } from "cheerio";
 import { v4 } from "uuid";
 import puppeteer, { HTTPRequest } from "puppeteer";
 import querystring from "querystring";
@@ -889,7 +889,7 @@ export const login = {
     debug("Converted", samlText);
 
     debug("Parsing SAML XML");
-    const saml = cheerio.load(samlText, { xmlMode: true });
+    const saml = load(samlText, { xmlMode: true });
 
     debug("Looking for role SAML attribute");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
