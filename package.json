@@ -32,7 +32,7 @@
     "@aws-sdk/client-sts": "^3.473.0",
     "@smithy/node-http-handler": "^2.5.0",
     "bluebird": "^3.7.2",
-    "cheerio": "1.0.0-rc.12",
+    "cheerio": "^1.0.0-rc.10 <1.0.0",
     "commander": "^9.5.0",
     "debug": "^4.3.1",
     "ini": "^3.0.1",
