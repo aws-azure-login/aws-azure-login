@@ -40,7 +40,7 @@
     "lodash": "^4.17.21",
     "mkdirp": "^1.0.4",
     "proxy-agent": "^6.4.0",
-    "puppeteer": "^13.7.0",
+    "puppeteer": "^23.2.1",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
