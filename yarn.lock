@@ -1143,25 +1143,6 @@ ast-types@^0.13.4:
   dependencies:
     tslib "^2.0.1"
 
-aws-azure-login@^3.6.4:
-  version "3.6.4"
-  resolved "https://registry.npmjs.org/aws-azure-login/-/aws-azure-login-3.6.4.tgz"
-  integrity sha512-NipLWO5IRSDtKVdV4WJLsPtV0R9ezPovduiiNP0y+Lx0bfobgq2YYwsPcke0LZJGBCb65QpoeWU9lFtUYOkH5A==
-  dependencies:
-    "@aws-sdk/client-sts" "^3.473.0"
-    "@smithy/node-http-handler" "^2.5.0"
-    bluebird "^3.7.2"
-    cheerio "^1.0.0-rc.10"
-    commander "^9.5.0"
-    debug "^4.3.1"
-    ini "^3.0.1"
-    inquirer "^8.2.6"
-    lodash "^4.17.21"
-    mkdirp "^1.0.4"
-    proxy-agent "^6.4.0"
-    puppeteer "^13.7.0"
-    uuid "^8.3.2"
-
 balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.npmjs.org/balanced-match/-/balanced-match-1.0.2.tgz"
