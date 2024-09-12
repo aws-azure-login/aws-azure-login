@@ -735,6 +735,9 @@ export const login = {
       });
       await page.setViewport({ width: WIDTH - 15, height: HEIGHT - 35 });
 
+      debug("Enabling request interception");
+      await page.setRequestInterception(true);
+
       // Prevent redirection to AWS
       let samlResponseData;
       const samlResponsePromise = new Promise((resolve) => {
@@ -767,9 +770,6 @@ export const login = {
           }
         });
       });
-
-      debug("Enabling request interception");
-      await page.setRequestInterception(true);
 
       try {
         if (headless || (!headless && cliProxy)) {
