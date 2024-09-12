@@ -3,7 +3,7 @@ import Bluebird from "bluebird";
 import inquirer, { QuestionCollection, Question } from "inquirer";
 import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
-import cheerio from "cheerio";
+import { load } from "cheerio";
 import { v4 } from "uuid";
 import * as puppeteer from "puppeteer";
 import { HTTPRequest } from "puppeteer";
@@ -13,7 +13,7 @@ import { CLIError } from "./CLIError";
 import { awsConfig, ProfileConfig } from "./awsConfig";
 import proxy from "proxy-agent";
 import { paths } from "./paths";
-import { mkdirp } from "mkdirp";
+import mkdirp from "mkdirp";
 import { Agent } from "https";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
@@ -502,6 +502,7 @@ export const login = {
       profile.azure_default_role_arn,
       profile.azure_default_duration_hours,
     );
+
     await this._assumeRoleAsync(
       profileName,
       samlResponse,
@@ -587,6 +588,7 @@ export const login = {
   // Load the profile
   async _loadProfileAsync(profileName: string): Promise<ProfileConfig> {
     const profile = await awsConfig.getProfileConfigAsync(profileName);
+
     if (!profile)
       throw new CLIError(
         `Unknown profile '${profileName}'. You must configure it first with --configure.`,
@@ -888,7 +890,7 @@ export const login = {
     debug("Converted", samlText);
 
     debug("Parsing SAML XML");
-    const saml = cheerio.load(samlText, { xmlMode: true });
+    const saml = load(samlText, { xmlMode: true });
 
     debug("Looking for role SAML attribute");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -1009,9 +1011,9 @@ export const login = {
     role: Role,
     durationHours: number,
     awsNoVerifySsl: boolean,
-    region: string | undefined,
+    region: string
   ): Promise<void> {
-    console.log(`Assuming role ${role.roleArn}`);
+    console.log(`Assuming role ${role.roleArn} in region ${region}...`);
     let stsOptions: STSClientConfig = {};
     if (process.env.https_proxy) {
       stsOptions = {

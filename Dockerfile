@@ -3,8 +3,10 @@ FROM node:14-slim
 # Install Puppeteer dependencies: https://github.com/GoogleChrome/puppeteer/blob/master/docs/troubleshooting.md#chrome-headless-doesnt-launch
 RUN apt-get update \
    && apt-get install -y \
-   gconf-service \
+   ca-certificates \
+   fonts-liberation \
    libasound2 \
+   libatk-bridge2.0-0 \
    libatk1.0-0 \
    libc6 \
    libcairo2 \
@@ -19,6 +21,7 @@ RUN apt-get update \
    libglib2.0-0 \
    libgtk-3-0 \
    libnspr4 \
+   libnss3 \
    libpango-1.0-0 \
    libpangocairo-1.0-0 \
    libstdc++6 \
@@ -35,13 +38,9 @@ RUN apt-get update \
    libxrender1 \
    libxss1 \
    libxtst6 \
-   ca-certificates \
-   fonts-liberation \
-   libappindicator1 \
-   libnss3 \
    lsb-release \
-   xdg-utils \
    wget \
+   xdg-utils \
    && apt-get -q -y clean \
    && rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
 
