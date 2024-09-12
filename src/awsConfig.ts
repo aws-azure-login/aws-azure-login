@@ -121,9 +121,9 @@ export const awsConfig = {
     const config =
       (await this._loadAsync<{ [key: string]: ProfileConfig }>("config")) || {};
 
-    const profiles = Object.keys(config).map(function (e) {
-      return e.replace("profile ", "");
-    });
+    const profiles = Object.keys(config)
+      .map((e) => e.replace("profile ", ""))
+      .filter((e) => !e.startsWith("sso-session ")); // don't include sso-session profiles (aws sso session)
     debug(`Received profiles: ${profiles.toString()}`);
     return profiles;
   },
