@@ -10,11 +10,11 @@ import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
 import { awsConfig, ProfileConfig } from "./awsConfig";
-import proxy from "proxy-agent";
 import { paths } from "./paths";
 import mkdirp from "mkdirp";
 import { Agent } from "https";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
+import { HttpsProxyAgent } from "hpagent";
 
 const debug = _debug("aws-azure-login");
 
@@ -1015,10 +1015,14 @@ export const login = {
     console.log(`Assuming role ${role.roleArn} in region ${region}...`);
     let stsOptions: STSClientConfig = {};
     if (process.env.https_proxy) {
+      const proxy_agent = new HttpsProxyAgent({
+        proxy: process.env.https_proxy ?? "",
+      });
       stsOptions = {
         ...stsOptions,
         requestHandler: new NodeHttpHandler({
-          httpsAgent: proxy(process.env.https_proxy),
+          httpsAgent: proxy_agent,
+          httpAgent: proxy_agent,
         }),
       };
     }
