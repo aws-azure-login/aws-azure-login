@@ -63,6 +63,10 @@ You can also put the docker-launch.sh script into your bin directory for the aws
 
 Now just run `aws-azure-login`.
 
+If you find yourself operating behind a corporate proxy you may need to make use of the `--env , -e, --env-file` docker
+run options to ensure the correct proxy environment variables are set (i.e. `HTTP_PROXY` or `HTTPS_PROXY`). For more see
+[`setting-docker-envs`](https://docs.docker.com/engine/reference/commandline/run/#set-environment-variables--e---env---env-file).
+
 ### Snap
 
 https://snapcraft.io/aws-azure-login
