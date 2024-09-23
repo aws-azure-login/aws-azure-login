@@ -123,7 +123,12 @@ export const awsConfig = {
 
     const profiles = Object.keys(config)
       .map((e) => e.replace("profile ", ""))
-      .filter((e) => !e.startsWith("sso-session ")); // don't include sso-session profiles (aws sso session)
+      .filter((e) => !e.startsWith("sso-session ")) // don't include sso-session profiles (aws sso session)
+       // filter out profile config with sso_session
+      .filter(async (e) => {
+        const profileConfig = await this.getProfileConfigAsync(e);
+        return !profileConfig?.sso_session;
+      });
     debug(`Received profiles: ${profiles.toString()}`);
     return profiles;
   },

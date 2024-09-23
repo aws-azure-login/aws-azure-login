@@ -737,6 +737,7 @@ export const login = {
 
       debug("Enabling request interception");
       await page.setRequestInterception(true);
+      await Bluebird.delay(500);
 
       // Prevent redirection to AWS
       let samlResponseData;
