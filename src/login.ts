@@ -726,7 +726,7 @@ export const login = {
       });
 
       // Wait for a bit as sometimes the browser isn't ready.
-      await Bluebird.delay(200);
+      await Bluebird.delay(100);
 
       const pages = await browser.pages();
       const page = pages[0];
@@ -737,7 +737,6 @@ export const login = {
 
       debug("Enabling request interception");
       await page.setRequestInterception(true);
-      await Bluebird.delay(500);
 
       // Prevent redirection to AWS
       let samlResponseData;
