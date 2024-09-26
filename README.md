@@ -1,7 +1,7 @@
-[![view on npm](http://img.shields.io/npm/v/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
-[![npm module downloads per month](http://img.shields.io/npm/dm/aws-azure-login.svg)](https://www.npmjs.org/package/aws-azure-login)
+[![view on npm](http://img.shields.io/npm/v/@cloud-infrastructure-tools/aws-azure-login.svg)](https://www.npmjs.org/package/@cloud-infrastructure-tools/aws-azure-login)
+[![npm module downloads per month](http://img.shields.io/npm/dm/@cloud-infrastructure-tools/aws-azure-login.svg)](https://www.npmjs.org/package/@cloud-infrastructure-tools/aws-azure-login)
 
-# aws-azure-login
+# @cloud-infrastructure-tools/aws-azure-login
 
 If your organization uses [Azure Active Directory](https://azure.microsoft.com) to provide SSO login to the AWS console, then there is no easy way to log in on the command line or to use the [AWS CLI](https://aws.amazon.com/cli/). This tool fixes that. It lets you use the normal Azure AD login (including MFA) from a command line to create a federated AWS session and places the temporary credentials in the proper place for the AWS CLI and SDKs.
 
@@ -11,13 +11,13 @@ Installation can be done in any of the following platform - Windows, Linux, Dock
 
 ### Windows
 
-Install [Node.js](https://nodejs.org/) v12 or higher. Then install aws-azure-login with npm:
+Install [Node.js](https://nodejs.org/) v12 or higher. Then install @cloud-infrastructure-tools/aws-azure-login with npm:
 
-    npm install -g aws-azure-login
+    npm install -g @cloud-infrastructure-tools/aws-azure-login
 
 You may need to install puppeteer dependency, if you're getting missing chrome or chromium message
 
-    node <node_modules_dir>/aws-azure-login/node_modules/puppeteer/install.js
+    node <node_modules_dir>/@cloud-infrastructure-tools/aws-azure-login/node_modules/puppeteer/install.js
 
 ### Linux
 
@@ -25,9 +25,9 @@ In Linux you can either install for all users or just the current user. In eithe
 
 #### Option A: Install for All Users
 
-Install aws-azure-login globally with npm:
+Install @cloud-infrastructure-tools/aws-azure-login globally with npm:
 
-    sudo npm install -g aws-azure-login --unsafe-perm
+    sudo npm install -g @cloud-infrastructure-tools/aws-azure-login --unsafe-perm
 
 Puppeteer doesn't install globally with execution permissions for all users so you'll need to modify them:
 
@@ -44,21 +44,21 @@ First configure npm to install global packages in [your home directory](https://
     echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.profile
     source ~/.profile
 
-Then install aws-azure-login:
+Then install @cloud-infrastructure-tools/aws-azure-login:
 
-    npm install -g aws-azure-login
+    npm install -g @cloud-infrastructure-tools/aws-azure-login
 
 ### Docker
 
-A Docker image has been built with aws-azure-login preinstalled. You simply need to run the command with a volume mounted to your AWS configuration directory.
+A Docker image has been built with @cloud-infrastructure-tools/aws-azure-login preinstalled. You simply need to run the command with a volume mounted to your AWS configuration directory.
 
-    docker run --rm -it -v ~/.aws:/root/.aws aws-azure-login/aws-azure-login
+    docker run --rm -it -v ~/.aws:/root/.aws public.ecr.aws/moxa-cloud-platform/toolchain:aws-azure-login
 
 The Docker image is configured with an entrypoint so you can just feed any arguments in at the end.
 
 You can also put the docker-launch.sh script into your bin directory for the aws-azure-login command to function as usual:
 
-    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/aws-azure-login/aws-azure-login/main/docker-launch.sh -L
+    sudo curl -o /usr/local/bin/aws-azure-login https://raw.githubusercontent.com/cloud-infrastructure-tools/aws-azure-login/main/docker-launch.sh -L
     sudo chmod o+x /usr/local/bin/aws-azure-login
 
 Now just run `aws-azure-login`.
@@ -129,7 +129,7 @@ To avoid having to `<Enter>` through the prompts after setting these environment
 Use the `HISTCONTROL` environment variable to avoid storing the password in your bash history (notice the space at the beginning):
 
     $ HISTCONTROL=ignoreboth
-    $  export AZURE_DEFAULT_PASSWORD=mypassword
+    $ export AZURE_DEFAULT_PASSWORD=mypassword
     $ aws-azure-login
 
 ### Logging In

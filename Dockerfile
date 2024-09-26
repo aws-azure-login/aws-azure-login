@@ -14,8 +14,10 @@ RUN apt-get update \
    libdbus-1-3 \
    libexpat1 \
    libfontconfig1 \
-   libgbm1 \
    libgcc1 \
+   libgbm1 \
+   libgconf-2-4 \
+   libgdk-pixbuf2.0-0 \
    libglib2.0-0 \
    libgtk-3-0 \
    libnspr4 \
@@ -45,7 +47,7 @@ RUN apt-get update \
 COPY package.json yarn.lock /aws-azure-login/
 
 RUN cd /aws-azure-login \
-   && yarn install --production
+   && npm i
 
 COPY lib /aws-azure-login/lib
 

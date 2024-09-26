@@ -1,7 +1,7 @@
 import ini from "ini";
 import _debug from "debug";
 import { paths } from "./paths";
-import mkdirp from "mkdirp";
+import { mkdirp } from "mkdirp";
 import fs from "fs";
 import util from "util";
 
@@ -38,12 +38,12 @@ interface SaveData {
 export const awsConfig = {
   async setProfileConfigValuesAsync(
     profileName: string,
-    values: ProfileConfig
+    values: ProfileConfig,
   ): Promise<void> {
     const sectionName =
       profileName === "default" ? "default" : `profile ${profileName}`;
     debug(
-      `Setting config for profile '${profileName}' in section '${sectionName}'`
+      `Setting config for profile '${profileName}' in section '${sectionName}'`,
     );
     const config =
       (await this._loadAsync<{ [key: string]: ProfileConfig }>("config")) || {};
@@ -57,15 +57,15 @@ export const awsConfig = {
   },
 
   async getProfileConfigAsync(
-    profileName: string
+    profileName: string,
   ): Promise<ProfileConfig | undefined> {
     const sectionName =
       profileName === "default" ? "default" : `profile ${profileName}`;
     debug(
-      `Getting config for profile '${profileName}' in section '${sectionName}'`
+      `Getting config for profile '${profileName}' in section '${sectionName}'`,
     );
     const config = await this._loadAsync<{ [key: string]: ProfileConfig }>(
-      "config"
+      "config",
     );
 
     if (!config) {
@@ -78,7 +78,7 @@ export const awsConfig = {
   async isProfileAboutToExpireAsync(profileName: string): Promise<boolean> {
     debug(`Getting credentials for profile '${profileName}'`);
     const config = await this._loadAsync<{ [key: string]: ProfileCredentials }>(
-      "credentials"
+      "credentials",
     );
 
     let expirationDate;
@@ -97,14 +97,14 @@ export const awsConfig = {
     debug(
       `Remaining time till credential expiration: ${
         timeDifference / 1000
-      }s, refresh due if time lower than: ${refreshLimitInMs / 1000}s`
+      }s, refresh due if time lower than: ${refreshLimitInMs / 1000}s`,
     );
     return timeDifference < refreshLimitInMs;
   },
 
   async setProfileCredentialsAsync(
     profileName: string,
-    values: ProfileCredentials
+    values: ProfileCredentials,
   ): Promise<void> {
     const credentials =
       (await this._loadAsync<{
@@ -121,9 +121,14 @@ export const awsConfig = {
     const config =
       (await this._loadAsync<{ [key: string]: ProfileConfig }>("config")) || {};
 
-    const profiles = Object.keys(config).map(function (e) {
-      return e.replace("profile ", "");
-    });
+    const profiles = Object.keys(config)
+      .map((e) => e.replace("profile ", ""))
+      .filter((e) => !e.startsWith("sso-session ")) // don't include sso-session profiles (aws sso session)
+       // filter out profile config with sso_session
+      .filter(async (e) => {
+        const profileConfig = await this.getProfileConfigAsync(e);
+        return !profileConfig?.sso_session;
+      });
     debug(`Received profiles: ${profiles.toString()}`);
     return profiles;
   },
