@@ -133,7 +133,7 @@ export const awsConfig = {
 
     return new Promise<T | undefined>((resolve, reject) => {
       debug(`Loading '${type}' file at '${paths[type]}'`);
-      fs.readFile(paths[type], "utf8", (err, data) => {
+      fs.readFile(paths[type]!, "utf8", (err, data) => {
         if (err) {
           if (err.code === "ENOENT") {
             debug(`File not found. Returning undefined.`);
@@ -164,6 +164,6 @@ export const awsConfig = {
     await mkdirp(paths.awsDir);
 
     debug(`Writing '${type}' INI to file '${paths[type]}'`);
-    await writeFile(paths[type], text);
+    await writeFile(paths[type]!, text);
   },
 };
