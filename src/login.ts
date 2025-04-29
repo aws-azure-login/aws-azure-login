@@ -5,7 +5,8 @@ import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
 import { load } from "cheerio";
 import { v4 } from "uuid";
-import puppeteer, { HTTPRequest } from "puppeteer";
+import * as puppeteer from "puppeteer";
+import { Browser, Page, ElementHandle, HTTPRequest } from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
@@ -46,8 +47,8 @@ const states = [
     name: "username input",
     selector: `input[name="loginfmt"]:not(.moveOffScreen)`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       noPrompt: boolean,
       defaultUsername: string
     ): Promise<void> {
@@ -129,13 +130,13 @@ const states = [
   {
     name: "account selection",
     selector: `#aadTile > div > div.table-cell.tile-img > img`,
-    async handler(page: puppeteer.Page): Promise<void> {
+    async handler(page: Page): Promise<void> {
       debug("Multiple accounts associated with username.");
       const aadTile = await page.$("#aadTileTitle");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const aadTileMessage: string = await page.evaluate(
         // eslint-disable-next-line
-        (a) => a.textContent,
+        (a) => a?.textContent || "",
         aadTile
       );
 
@@ -143,7 +144,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const msaTileMessage: string = await page.evaluate(
         // eslint-disable-next-line
-        (m) => m.textContent,
+        (m) => m?.textContent || "",
         msaTile
       );
 
@@ -187,7 +188,7 @@ const states = [
   {
     name: "passwordless",
     selector: `input[value='Send notification']`,
-    async handler(page: puppeteer.Page) {
+    async handler(page: Page) {
       debug("Sending notification");
       // eslint-disable-next-line
       await page.click("input[value='Send notification']");
@@ -207,7 +208,7 @@ const states = [
       // eslint-disable-next-line
       const message = await page.evaluate(
         // eslint-disable-next-line
-        (el) => el.textContent,
+        (el) => el?.textContent || "",
         messageElement
       );
       console.log(message);
@@ -215,7 +216,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const authCode = await page.evaluate(
         // eslint-disable-next-line
-        (el) => el.textContent,
+        (el) => el?.textContent || "",
         codeElement
       );
       console.log(authCode);
@@ -230,8 +231,8 @@ const states = [
     name: "password input",
     selector: `input[name="Password"]:not(.moveOffScreen),input[name="passwd"]:not(.moveOffScreen)`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       noPrompt: boolean,
       _defaultUsername: string,
       defaultPassword: string
@@ -282,14 +283,11 @@ const states = [
   {
     name: "TFA instructions",
     selector: `#idDiv_SAOTCAS_Description`,
-    async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
-    ): Promise<void> {
+    async handler(page: Page, selected: ElementHandle): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
-        (description) => description.textContent,
+        (description) => description?.textContent || "",
         selected
       );
       console.log(descriptionMessage);
@@ -303,7 +301,7 @@ const states = [
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const authenticationCode = await page.evaluate(
           // eslint-disable-next-line
-          (d) => d.textContent,
+          (d) => d?.textContent || "",
           authenticationCodeElement
         );
         debug("Printing the authentication code to console");
@@ -319,10 +317,7 @@ const states = [
   {
     name: "TFA failed",
     selector: `#idDiv_SAASDS_Description,#idDiv_SAASTO_Description`,
-    async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
-    ): Promise<void> {
+    async handler(page: Page, selected: ElementHandle): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
@@ -330,13 +325,13 @@ const states = [
         selected
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      throw new CLIError(descriptionMessage);
+      throw new CLIError(descriptionMessage || "Error occurred");
     },
   },
   {
     name: "TFA code input",
     selector: "input[name=otc]:not(.moveOffScreen)",
-    async handler(page: puppeteer.Page): Promise<void> {
+    async handler(page: Page): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
@@ -352,7 +347,7 @@ const states = [
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const descriptionMessage = await page.evaluate(
           // eslint-disable-next-line
-          (d) => d.textContent,
+          (d) => d?.textContent || "",
           description
         );
         console.log(descriptionMessage);
@@ -400,8 +395,8 @@ const states = [
     name: "Remember me",
     selector: `#KmsiDescription`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       _noPrompt: boolean,
       _defaultUsername: string,
       _defaultPassword: string | undefined,
@@ -422,18 +417,15 @@ const states = [
   {
     name: "Service exception",
     selector: "#service_exception_message",
-    async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
-    ): Promise<void> {
+    async handler(page: Page, selected: ElementHandle): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
-        (description) => description.textContent,
+        (description) => description?.textContent || "",
         selected
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      throw new CLIError(descriptionMessage);
+      throw new CLIError(descriptionMessage || "Error occurred");
     },
   },
 ];
@@ -687,7 +679,7 @@ export const login = {
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
-    let browser: puppeteer.Browser | undefined;
+    let browser: Browser | undefined;
 
     try {
       const args = headless
