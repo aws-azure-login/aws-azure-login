@@ -5,7 +5,8 @@ import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
 import { load } from "cheerio";
 import { v4 } from "uuid";
-import puppeteer, { HTTPRequest } from "puppeteer";
+import * as puppeteer from "puppeteer";
+import { HTTPRequest } from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
@@ -135,7 +136,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const aadTileMessage: string = await page.evaluate(
         // eslint-disable-next-line
-        (a) => a.textContent,
+        (a) => a?.textContent || '',
         aadTile
       );
 
@@ -143,7 +144,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const msaTileMessage: string = await page.evaluate(
         // eslint-disable-next-line
-        (m) => m.textContent,
+        (m) => m?.textContent || '',
         msaTile
       );
 
@@ -207,7 +208,7 @@ const states = [
       // eslint-disable-next-line
       const message = await page.evaluate(
         // eslint-disable-next-line
-        (el) => el.textContent,
+        (el) => el?.textContent || '',
         messageElement
       );
       console.log(message);
@@ -215,7 +216,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const authCode = await page.evaluate(
         // eslint-disable-next-line
-        (el) => el.textContent,
+        (el) => el?.textContent || '',
         codeElement
       );
       console.log(authCode);
@@ -289,13 +290,13 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
-        (description) => description.textContent,
+        (description) => description?.textContent || '',
         selected
       );
       console.log(descriptionMessage);
       debug("Checking if authentication code is displayed");
       // eslint-disable-next-line
-      if (descriptionMessage.includes("enter the number shown to sign in")) {
+      if (descriptionMessage && descriptionMessage.includes("enter the number shown to sign in")) {
         const authenticationCodeElement = await page.$(
           "#idRichContext_DisplaySign"
         );
@@ -303,7 +304,7 @@ const states = [
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const authenticationCode = await page.evaluate(
           // eslint-disable-next-line
-          (d) => d.textContent,
+          (d) => d?.textContent || '',
           authenticationCodeElement
         );
         debug("Printing the authentication code to console");
@@ -326,7 +327,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
-        (description) => description.textContent,
+        (description) => description?.textContent || 'An error occurred',
         selected
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -352,7 +353,7 @@ const states = [
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const descriptionMessage = await page.evaluate(
           // eslint-disable-next-line
-          (d) => d.textContent,
+          (d) => d?.textContent || '',
           description
         );
         console.log(descriptionMessage);
@@ -429,7 +430,7 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
         // eslint-disable-next-line
-        (description) => description.textContent,
+        (description) => description?.textContent || 'An error occurred',
         selected
       );
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
