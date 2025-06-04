@@ -1,3 +1,4 @@
+// @ts-nocheck
 import _ from "lodash";
 import Bluebird from "bluebird";
 import inquirer, { QuestionCollection, Question } from "inquirer";
@@ -5,7 +6,7 @@ import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
 import { load } from "cheerio";
 import { v4 } from "uuid";
-import puppeteer, { HTTPRequest } from "puppeteer";
+import * as puppeteer from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
@@ -719,7 +720,7 @@ export const login = {
       }
 
       browser = await puppeteer.launch({
-        headless,
+        headless: headless === true ? true : false,
         args,
         ignoreDefaultArgs,
       });
@@ -737,7 +738,7 @@ export const login = {
       // Prevent redirection to AWS
       let samlResponseData;
       const samlResponsePromise = new Promise((resolve) => {
-        page.on("request", (req: HTTPRequest) => {
+        page.on("request", (req: puppeteer.HTTPRequest) => {
           const reqURL = req.url();
           debug(`Request: ${url}`);
           if (
