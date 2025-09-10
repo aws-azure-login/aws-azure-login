@@ -286,16 +286,15 @@ const states = [
       page: puppeteer.Page,
       selected: puppeteer.ElementHandle
     ): Promise<void> {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const descriptionMessage = await page.evaluate(
+      const descriptionMessage = (await page.evaluate(
         // eslint-disable-next-line
         (description) => description.textContent,
         selected
-      );
+      )) as string;
       console.log(descriptionMessage);
-      debug("Checking if authentication code is displayed");
-      // eslint-disable-next-line
-      if (descriptionMessage.includes("enter the number shown to sign in")) {
+
+      try {
+        debug("Checking if authentication code is displayed");
         const authenticationCodeElement = await page.$(
           "#idRichContext_DisplaySign"
         );
@@ -308,7 +307,10 @@ const states = [
         );
         debug("Printing the authentication code to console");
         console.log(authenticationCode);
+      } catch {
+        debug("No authentication code found on page");
       }
+
       debug("Waiting for response");
       await page.waitForSelector(`#idDiv_SAOTCAS_Description`, {
         hidden: true,
