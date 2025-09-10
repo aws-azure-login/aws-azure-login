@@ -704,12 +704,20 @@ export const login = {
           `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
         );
       if (rememberMe) {
-        await mkdirp(paths.chromium);
-        args.push(`--user-data-dir=${paths.chromium}`);
+        if (paths.userDataDir) {
+          args.push(`--user-data-dir=${paths.userDataDir}`);
+        } else {
+          await mkdirp(paths.chromium);
+          args.push(`--user-data-dir=${paths.chromium}`);
+        }
       }
 
       if (process.env.https_proxy) {
         args.push(`--proxy-server=${process.env.https_proxy}`);
+      }
+
+      if (paths.profileDir) {
+        args.push(`--profile-directory=${paths.profileDir}`);
       }
 
       const ignoreDefaultArgs = noDisableExtensions
@@ -720,11 +728,21 @@ export const login = {
         args.push("--disable-gpu");
       }
 
-      browser = await puppeteer.launch({
+      const launchParams: {
+        headless: boolean, args: string[],
+        ignoreDefaultArgs: string[],
+        executablePath?: string,
+      } = {
         headless,
         args,
         ignoreDefaultArgs,
-      });
+      }
+
+      if (paths.chromeBin) {
+        launchParams.executablePath = paths.chromeBin;
+      }
+
+      browser = await puppeteer.launch(launchParams);
 
       // Wait for a bit as sometimes the browser isn't ready.
       await Bluebird.delay(200);
