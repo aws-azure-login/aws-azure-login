@@ -67,6 +67,32 @@ Now just run `aws-azure-login`.
 
 https://snapcraft.io/aws-azure-login
 
+### Mac with M1 Pro chipset (arm64)
+Both of the bellow methods have been tested to work on Mac with M1 Pro CPU.
+
+#### Local installation on Mac (for all users)
+First install `node`, `npm` and `chromium` on your Mac.
+
+Set environment variables for `pupeteer`, then install it localy.
+Finally install `aws-azure-login`:
+
+    export PUPPETEER_EXECUTABLE_PATH=`which chromium`
+    npm install puppeteer
+    sudo npm install -g aws-azure-login --unsafe-perm
+    sudo chmod -R go+rx $(npm root -g)
+
+
+#### Docker container on Mac
+Fisrt build the app according to the steps from `.github/workflows/main.yml`:
+
+    yarn install
+    yarn test
+    yarn build
+
+Use the `Dockerfile.arm64` to build your container example:
+
+    docker build -t aws-azure-login-arm64 -f Dockerfile.arm64 .
+
 ## Usage
 
 ### Configuration
