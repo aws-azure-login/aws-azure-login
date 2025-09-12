@@ -179,6 +179,14 @@ If you configure all profiles to stay logged in, you can easily skip the prompts
 This will allow you to automate the credentials refresh procedure, eg. by running a cronjob every 5 minutes.
 To skip unnecessary calls, the credentials are only getting refreshed if the time to expire is lower than 11 minutes.
 
+### Renew credentials for a subset of configured profiles
+
+You can renew credentials for a subset of profiles by combining `--all-profiles` and `--profile=<regex>`:
+
+    aws-azure-login --all-profiles --profile=^online-grocery- --no-prompt
+
+This would match any profiles that start with `online-grocery-`.
+
 ## Getting Your Tenant ID and App ID URI
 
 Your Azure AD system admin should be able to provide you with your Tenant ID and App ID URI. If you can't get it from them, you can scrape it from a login page from the myapps.microsoft.com page.

@@ -515,6 +515,7 @@ export const login = {
   },
 
   async loginAll(
+    profileMatcher: string,
     mode: string,
     disableSandbox: boolean,
     noPrompt: boolean,
@@ -525,7 +526,7 @@ export const login = {
     noDisableExtensions: boolean,
     disableGpu: boolean
   ): Promise<void> {
-    const profiles = await awsConfig.getAllProfileNames();
+    const profiles = await awsConfig.getAllProfileNames(profileMatcher);
 
     if (!profiles) {
       return;
