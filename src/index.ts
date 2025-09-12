@@ -34,6 +34,11 @@ program
     false
   )
   .option(
+    "--chromium-executable-path <chromiumExecutablePath>",
+    "Path to the Chromium executable to be used by Puppeteer",
+    undefined
+  )
+  .option(
     "--enable-chrome-network-service",
     "Enable Chromium's Network Service (needed when login provider redirects with 3XX)"
   )
@@ -64,6 +69,8 @@ const profileName =
 const mode = (options.mode as string | undefined) || "cli";
 const disableSandbox = !options.sandbox;
 const noPrompt = !options.prompt;
+const chromiumExecutablePath =
+  (options.chromiumExecutablePath as string | undefined) || undefined;
 const enableChromeNetworkService = !!options.enableChromeNetworkService;
 const awsNoVerifySsl = !options.verifySsl;
 const enableChromeSeamlessSso = !!options.enableChromeSeamlessSso;
@@ -83,7 +90,8 @@ Promise.resolve()
         enableChromeSeamlessSso,
         forceRefresh,
         noDisableExtensions,
-        disableGpu
+        disableGpu,
+        chromiumExecutablePath
       );
     }
 
@@ -97,7 +105,8 @@ Promise.resolve()
       awsNoVerifySsl,
       enableChromeSeamlessSso,
       noDisableExtensions,
-      disableGpu
+      disableGpu,
+      chromiumExecutablePath
     );
   })
   .catch((err: Error) => {
