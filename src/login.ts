@@ -43,6 +43,45 @@ interface Role {
  */
 const states = [
   {
+    name: "coca-cola login",
+    selector: `.signon-app`,
+    async handler(
+      page: puppeteer.Page,
+      _selected: puppeteer.ElementHandle,
+      noPrompt: boolean,
+      _defaultUsername: string,
+      defaultPassword: string
+    ): Promise<void> {
+      let password;
+
+      if (noPrompt && defaultPassword) {
+        debug("Not prompting user for password");
+        password = defaultPassword;
+      } else {
+        debug("Prompting user for password");
+        ({ password } = await inquirer.prompt([
+          {
+            name: "password",
+            message: "Password:",
+            type: "password",
+          } as Question,
+        ]));
+      }
+
+      debug("Focusing on coca-cola password input");
+      await page.focus("input#password");
+
+      debug("Typing password");
+      await page.keyboard.type(password);
+
+      debug("Submitting form");
+      await page.click("form.login-form [type=submit]");
+
+      debug("Waiting for a delay");
+      await Bluebird.delay(500);
+    },
+  },
+  {
     name: "username input",
     selector: `input[name="loginfmt"]:not(.moveOffScreen)`,
     async handler(
