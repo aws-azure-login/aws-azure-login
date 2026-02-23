@@ -32,3 +32,4 @@ node_modules
 .vscode
 
 lib
+dist

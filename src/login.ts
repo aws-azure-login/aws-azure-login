@@ -1,18 +1,15 @@
 import _ from "lodash";
-import Bluebird from "bluebird";
 import inquirer, { QuestionCollection, Question } from "inquirer";
 import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
 import { load } from "cheerio";
 import { v4 } from "uuid";
-import puppeteer, { HTTPRequest } from "puppeteer";
+import { Browser, Page, ElementHandle, HTTPRequest } from "puppeteer";
 import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
 import { awsConfig, ProfileConfig } from "./awsConfig";
 import proxy from "proxy-agent";
-import { paths } from "./paths";
-import mkdirp from "mkdirp";
 import { Agent } from "https";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
@@ -23,8 +20,6 @@ const HEIGHT = 550;
 const DELAY_ON_UNRECOGNIZED_PAGE = 1000;
 const MAX_UNRECOGNIZED_PAGE_DELAY = 30 * 1000;
 
-// source: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sso-quick-start#google-chrome-all-platforms
-const AZURE_AD_SSO = "autologon.microsoftazuread-sso.com";
 const AWS_SAML_ENDPOINT = "https://signin.aws.amazon.com/saml";
 const AWS_CN_SAML_ENDPOINT = "https://signin.amazonaws.cn/saml";
 const AWS_GOV_SAML_ENDPOINT = "https://signin.amazonaws-us-gov.com/saml";
@@ -46,17 +41,17 @@ const states = [
     name: "username input",
     selector: `input[name="loginfmt"]:not(.moveOffScreen)`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       noPrompt: boolean,
       defaultUsername: string
     ): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+         
         const errorMessage = await page.evaluate(
-          // eslint-disable-next-line
+           
           (err) => err.textContent,
           error
         );
@@ -97,8 +92,6 @@ const states = [
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       await page.keyboard.type(username);
 
-      await Bluebird.delay(500);
-
       debug("Waiting for submit button to be visible");
       await page.waitForSelector(`input[type=submit]`, {
         visible: true,
@@ -108,8 +101,6 @@ const states = [
       debug("Submitting form");
       await page.click("input[type=submit]");
 
-      await Bluebird.delay(500);
-
       debug("Waiting for submission to finish");
       await Promise.race([
         page.waitForSelector(
@@ -117,7 +108,6 @@ const states = [
           { timeout: 60000 }
         ),
         (async (): Promise<void> => {
-          await Bluebird.delay(1000);
           await page.waitForSelector(`input[name=loginfmt]`, {
             hidden: true,
             timeout: 60000,
@@ -129,21 +119,21 @@ const states = [
   {
     name: "account selection",
     selector: `#aadTile > div > div.table-cell.tile-img > img`,
-    async handler(page: puppeteer.Page): Promise<void> {
+    async handler(page: Page): Promise<void> {
       debug("Multiple accounts associated with username.");
       const aadTile = await page.$("#aadTileTitle");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const aadTileMessage: string = await page.evaluate(
-        // eslint-disable-next-line
-        (a) => a.textContent,
+       
+      const aadTileMessage = await page.evaluate(
+         
+        (a) => a?.textContent,
         aadTile
       );
 
       const msaTile = await page.$("#msaTileTitle");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const msaTileMessage: string = await page.evaluate(
-        // eslint-disable-next-line
-        (m) => m.textContent,
+       
+      const msaTileMessage = await page.evaluate(
+         
+        (m) => m?.textContent,
         msaTile
       );
 
@@ -181,41 +171,40 @@ const states = [
 
       debug(`Proceeding with account ${account.selector}`);
       await page.click(account.selector);
-      await Bluebird.delay(500);
     },
   },
   {
     name: "passwordless",
     selector: `input[value='Send notification']`,
-    async handler(page: puppeteer.Page) {
+    async handler(page: Page) {
       debug("Sending notification");
-      // eslint-disable-next-line
+       
       await page.click("input[value='Send notification']");
       debug("Waiting for auth code");
-      // eslint-disable-next-line
+       
       await page.waitForSelector(`#idRemoteNGC_DisplaySign`, {
         visible: true,
         timeout: 60000,
       });
       debug("Printing the message displayed");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const messageElement = await page.$(
         "#idDiv_RemoteNGC_PollingDescription"
       );
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const codeElement = await page.$("#idRemoteNGC_DisplaySign");
-      // eslint-disable-next-line
+       
       const message = await page.evaluate(
-        // eslint-disable-next-line
-        (el) => el.textContent,
+         
+        (el) => el?.textContent,
         messageElement
       );
       console.log(message);
       debug("Printing the auth code");
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const authCode = await page.evaluate(
-        // eslint-disable-next-line
-        (el) => el.textContent,
+         
+        (el) => el?.textContent,
         codeElement
       );
       console.log(authCode);
@@ -230,8 +219,8 @@ const states = [
     name: "password input",
     selector: `input[name="Password"]:not(.moveOffScreen),input[name="passwd"]:not(.moveOffScreen)`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       noPrompt: boolean,
       _defaultUsername: string,
       defaultPassword: string
@@ -239,9 +228,9 @@ const states = [
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+         
         const errorMessage = await page.evaluate(
-          // eslint-disable-next-line
+           
           (err) => err.textContent,
           error
         );
@@ -274,23 +263,20 @@ const states = [
 
       debug("Submitting form");
       await page.click("span[class=submit],input[type=submit]");
-
-      debug("Waiting for a delay");
-      await Bluebird.delay(500);
     },
   },
   {
     name: "TFA instructions",
     selector: `#idDiv_SAOTCAS_Description`,
     async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      page: Page,
+      selected: ElementHandle
     ): Promise<void> {
       const descriptionMessage = (await page.evaluate(
-        // eslint-disable-next-line
+         
         (description) => description.textContent,
         selected
-      )) as string;
+      ));
       console.log(descriptionMessage);
 
       try {
@@ -299,14 +285,14 @@ const states = [
           "#idRichContext_DisplaySign"
         );
         debug("Reading the authentication code");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+         
         const authenticationCode = await page.evaluate(
-          // eslint-disable-next-line
-          (d) => d.textContent,
+           
+          (d) => d?.textContent,
           authenticationCodeElement
         );
         debug("Printing the authentication code to console");
-        console.log(authenticationCode);
+        console.log('Authentication code:', authenticationCode);
       } catch {
         debug("No authentication code found on page");
       }
@@ -322,39 +308,39 @@ const states = [
     name: "TFA failed",
     selector: `#idDiv_SAASDS_Description,#idDiv_SAASTO_Description`,
     async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      page: Page,
+      selected: ElementHandle
     ): Promise<void> {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const descriptionMessage = await page.evaluate(
-        // eslint-disable-next-line
+         
         (description) => description.textContent,
         selected
       );
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+       
       throw new CLIError(descriptionMessage);
     },
   },
   {
     name: "TFA code input",
     selector: "input[name=otc]:not(.moveOffScreen)",
-    async handler(page: puppeteer.Page): Promise<void> {
+    async handler(page: Page): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+         
         const errorMessage = await page.evaluate(
-          // eslint-disable-next-line
+           
           (err) => err.textContent,
           error
         );
         console.log(errorMessage);
       } else {
         const description = await page.$("#idDiv_SAOTCC_Description");
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+         
         const descriptionMessage = await page.evaluate(
-          // eslint-disable-next-line
-          (d) => d.textContent,
+           
+          (d) => d?.textContent,
           description
         );
         console.log(descriptionMessage);
@@ -389,7 +375,6 @@ const states = [
           { timeout: 60000 }
         ),
         (async (): Promise<void> => {
-          await Bluebird.delay(1000);
           await page.waitForSelector(`input[name=otc]`, {
             hidden: true,
             timeout: 60000,
@@ -402,8 +387,8 @@ const states = [
     name: "Remember me",
     selector: `#KmsiDescription`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       _noPrompt: boolean,
       _defaultUsername: string,
       _defaultPassword: string | undefined,
@@ -416,25 +401,22 @@ const states = [
         debug("Clicking don't remember button");
         await page.click("#idBtn_Back");
       }
-
-      debug("Waiting for a delay");
-      await Bluebird.delay(500);
     },
   },
   {
     name: "Service exception",
     selector: "#service_exception_message",
     async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      page: Page,
+      selected: ElementHandle
     ): Promise<void> {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+       
       const descriptionMessage = await page.evaluate(
-        // eslint-disable-next-line
+         
         (description) => description.textContent,
         selected
       );
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+       
       throw new CLIError(descriptionMessage);
     },
   },
@@ -444,23 +426,16 @@ export const login = {
   async loginAsync(
     profileName: string,
     mode: string,
-    disableSandbox: boolean,
+    browser: Browser,
     noPrompt: boolean,
-    enableChromeNetworkService: boolean,
     awsNoVerifySsl: boolean,
-    enableChromeSeamlessSso: boolean,
-    noDisableExtensions: boolean,
-    disableGpu: boolean
   ): Promise<void> {
-    let headless, cliProxy;
+    let cliProxy;
     if (mode === "cli") {
-      headless = true;
       cliProxy = true;
     } else if (mode === "gui") {
-      headless = false;
       cliProxy = false;
     } else if (mode === "debug") {
-      headless = false;
       cliProxy = true;
     } else {
       throw new CLIError("Invalid mode");
@@ -483,18 +458,13 @@ export const login = {
       assertionConsumerServiceURL
     );
     const samlResponse = await this._performLoginAsync(
+      browser,
       loginUrl,
-      headless,
-      disableSandbox,
       cliProxy,
       noPrompt,
-      enableChromeNetworkService,
       profile.azure_default_username,
       profile.azure_default_password,
-      enableChromeSeamlessSso,
       profile.azure_default_remember_me,
-      noDisableExtensions,
-      disableGpu
     );
     const roles = this._parseRolesFromSamlResponse(samlResponse);
     const { role, durationHours } = await this._askUserForRoleAndDurationAsync(
@@ -516,14 +486,10 @@ export const login = {
 
   async loginAll(
     mode: string,
-    disableSandbox: boolean,
+    browser: Browser,
     noPrompt: boolean,
-    enableChromeNetworkService: boolean,
     awsNoVerifySsl: boolean,
-    enableChromeSeamlessSso: boolean,
     forceRefresh: boolean,
-    noDisableExtensions: boolean,
-    disableGpu: boolean
   ): Promise<void> {
     const profiles = await awsConfig.getAllProfileNames();
 
@@ -532,12 +498,21 @@ export const login = {
     }
 
     for (const profile of profiles) {
+      const profileConfig = await awsConfig.getProfileConfigAsync(profile);
+      const env = this._loadProfileFromEnv();
+      const tenantId = profileConfig?.azure_tenant_id || env.azure_tenant_id;
+      const appIdUri = profileConfig?.azure_app_id_uri || env.azure_app_id_uri;
+      if (!tenantId || !appIdUri) {
+        debug(`Profile ${profile} is not configured with azure parameters. Skipping.`);
+        continue;
+      }
+
       debug(`Check if profile ${profile} is expired or is about to expire`);
       if (
         !forceRefresh &&
         !(await awsConfig.isProfileAboutToExpireAsync(profile))
       ) {
-        debug(`Profile ${profile} not yet due for refresh.`);
+        console.info(`Skipping profile ${profile} (not yet due for refresh)`);
         continue;
       }
 
@@ -545,14 +520,12 @@ export const login = {
       await this.loginAsync(
         profile,
         mode,
-        disableSandbox,
+        browser,
         noPrompt,
-        enableChromeNetworkService,
         awsNoVerifySsl,
-        enableChromeSeamlessSso,
-        noDisableExtensions,
-        disableGpu
       );
+
+      console.info(`Profile ${profile} processed`)
     }
   },
 
@@ -658,79 +631,29 @@ export const login = {
 
   /**
    * Perform the login using Chrome.
+   * @param {Browser} browser - The Puppeteer browser instance
    * @param {string} url - The login URL
-   * @param {boolean} headless - True to hide the GUI, false to show it.
-   * @param {boolean} disableSandbox - True to disable the Puppeteer sandbox.
    * @param {boolean} cliProxy - True to proxy input/output through the CLI, false to leave it in the GUI
    * @param {bool} [noPrompt] - Enable skipping of user prompting
-   * @param {bool} [enableChromeNetworkService] - Enable chrome network service.
    * @param {string} [defaultUsername] - The default username
    * @param {string} [defaultPassword] - The default password
-   * @param {bool} [enableChromeSeamlessSso] - chrome seamless SSO
    * @param {bool} [rememberMe] - Enable remembering the session
-   * @param {bool} [noDisableExtensions] - True to prevent Puppeteer from disabling Chromium extensions
-   * @param {bool} [disableGpu] - Disables GPU Acceleration
    * @returns {Promise.<string>} The SAML response.
    * @private
    */
   async _performLoginAsync(
+    browser: Browser,
     url: string,
-    headless: boolean,
-    disableSandbox: boolean,
     cliProxy: boolean,
     noPrompt: boolean,
-    enableChromeNetworkService: boolean,
     defaultUsername: string,
     defaultPassword: string | undefined,
-    enableChromeSeamlessSso: boolean,
     rememberMe: boolean,
-    noDisableExtensions: boolean,
-    disableGpu: boolean
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
-    let browser: puppeteer.Browser | undefined;
-
+    const page = await browser.newPage();
     try {
-      const args = headless
-        ? []
-        : [`--app=${url}`, `--window-size=${WIDTH},${HEIGHT}`];
-      if (disableSandbox) args.push("--no-sandbox");
-      if (enableChromeNetworkService)
-        args.push("--enable-features=NetworkService");
-      if (enableChromeSeamlessSso)
-        args.push(
-          `--auth-server-whitelist=${AZURE_AD_SSO}`,
-          `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
-        );
-      if (rememberMe) {
-        await mkdirp(paths.chromium);
-        args.push(`--user-data-dir=${paths.chromium}`);
-      }
-
-      if (process.env.https_proxy) {
-        args.push(`--proxy-server=${process.env.https_proxy}`);
-      }
-
-      const ignoreDefaultArgs = noDisableExtensions
-        ? ["--disable-extensions"]
-        : [];
-
-      if (disableGpu) {
-        args.push("--disable-gpu");
-      }
-
-      browser = await puppeteer.launch({
-        headless,
-        args,
-        ignoreDefaultArgs,
-      });
-
-      // Wait for a bit as sometimes the browser isn't ready.
-      await Bluebird.delay(200);
-
-      const pages = await browser.pages();
-      const page = pages[0];
       await page.setExtraHTTPHeaders({
         "Accept-Language": "en",
       });
@@ -741,7 +664,7 @@ export const login = {
       const samlResponsePromise = new Promise((resolve) => {
         page.on("request", (req: HTTPRequest) => {
           const reqURL = req.url();
-          debug(`Request: ${url}`);
+          debug(`Request: ${reqURL}`);
           if (
             reqURL === AWS_SAML_ENDPOINT ||
             reqURL === AWS_GOV_SAML_ENDPOINT ||
@@ -756,12 +679,7 @@ export const login = {
               headers: {},
               body: "",
             });
-            if (browser) {
-              // eslint-disable-next-line @typescript-eslint/no-floating-promises
-              browser.close();
-            }
-            browser = undefined;
-            debug(`Received SAML response, browser closed`);
+            debug(`Received SAML response`);
           } else {
             // eslint-disable-next-line @typescript-eslint/no-floating-promises
             req.continue();
@@ -773,16 +691,17 @@ export const login = {
       await page.setRequestInterception(true);
 
       try {
-        if (headless || (!headless && cliProxy)) {
-          debug("Going to login page");
-          await page.goto(url, { waitUntil: "domcontentloaded" });
-        } else {
-          debug("Waiting for login page to load");
-          await page.waitForNavigation({ waitUntil: "networkidle0" });
-        }
+        debug("Going to login page");
+        // Race page.goto with samlResponsePromise so that if Azure has active
+        // SSO cookies and immediately redirects to the AWS SAML endpoint, we
+        // don't hang waiting for domcontentloaded on the intercepted response.
+        await Promise.race([
+          page.goto(url, { waitUntil: "domcontentloaded" }),
+          samlResponsePromise,
+        ]);
       } catch (err) {
         if (err instanceof Error) {
-          // An error will be thrown if you're still logged in cause the page.goto ot waitForNavigation
+          // An error will be thrown if you're still logged in cause the page.goto
           // will be a redirect to AWS. That's usually OK
           debug(`Error occured during loading the first page: ${err.message}`);
         }
@@ -790,7 +709,7 @@ export const login = {
 
       if (cliProxy) {
         let totalUnrecognizedDelay = 0;
-        // eslint-disable-next-line no-constant-condition
+         
         while (true) {
           if (samlResponseData) break;
 
@@ -849,7 +768,9 @@ export const login = {
             }
 
             totalUnrecognizedDelay += DELAY_ON_UNRECOGNIZED_PAGE;
-            await Bluebird.delay(DELAY_ON_UNRECOGNIZED_PAGE);
+            await new Promise((resolve) => {
+              setTimeout(resolve, DELAY_ON_UNRECOGNIZED_PAGE)
+            })
           }
         }
       } else {
@@ -873,9 +794,7 @@ export const login = {
 
       return samlResponse;
     } finally {
-      if (browser) {
-        await browser.close();
-      }
+      await page.close();
     }
   },
 

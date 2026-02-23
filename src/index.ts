@@ -4,8 +4,14 @@ process.on("SIGINT", () => process.exit(1));
 process.on("SIGTERM", () => process.exit(1));
 
 import { Command } from "commander";
+import puppeteer, { Browser } from "puppeteer";
+import mkdirp from "mkdirp";
 import { configureProfileAsync } from "./configureProfileAsync";
 import { login } from "./login";
+import { paths } from "./paths";
+
+// source: https://docs.microsoft.com/en-us/azure/active-directory/hybrid/how-to-connect-sso-quick-start#google-chrome-all-platforms
+const AZURE_AD_SSO = "autologon.microsoftazuread-sso.com";
 
 const program = new Command();
 
@@ -71,34 +77,72 @@ const forceRefresh = !!options.forceRefresh;
 const noDisableExtensions = !options.disableExtensions;
 const disableGpu = !!options.disableGpu;
 
-Promise.resolve()
-  .then(() => {
-    if (options.allProfiles) {
-      return login.loginAll(
-        mode,
-        disableSandbox,
-        noPrompt,
-        enableChromeNetworkService,
-        awsNoVerifySsl,
-        enableChromeSeamlessSso,
-        forceRefresh,
-        noDisableExtensions,
-        disableGpu
-      );
-    }
+async function launchBrowser(): Promise<Browser> {
+  const headless = mode === "cli";
+  const args: string[] = [];
 
-    if (options.configure) return configureProfileAsync(profileName);
-    return login.loginAsync(
-      profileName,
-      mode,
-      disableSandbox,
-      noPrompt,
-      enableChromeNetworkService,
-      awsNoVerifySsl,
-      enableChromeSeamlessSso,
-      noDisableExtensions,
-      disableGpu
+  if (!headless) {
+    const WIDTH = 425;
+    const HEIGHT = 550;
+    args.push(`--window-size=${WIDTH},${HEIGHT}`);
+  }
+
+  if (disableSandbox) args.push("--no-sandbox");
+  if (enableChromeNetworkService)
+    args.push("--enable-features=NetworkService");
+  if (enableChromeSeamlessSso)
+    args.push(
+      `--auth-server-whitelist=${AZURE_AD_SSO}`,
+      `--auth-negotiate-delegate-whitelist=${AZURE_AD_SSO}`
     );
+  if (disableGpu) args.push("--disable-gpu");
+  if (process.env.https_proxy) {
+    args.push(`--proxy-server=${process.env.https_proxy}`);
+  }
+
+  await mkdirp(paths.chromium);
+  args.push(`--user-data-dir=${paths.chromium}`);
+
+  const ignoreDefaultArgs = noDisableExtensions
+    ? ["--disable-extensions"]
+    : [];
+
+  return puppeteer.launch({
+    headless,
+    args,
+    ignoreDefaultArgs,
+  });
+}
+
+Promise.resolve()
+  .then(async () => {
+    if (options.configure) return configureProfileAsync(profileName);
+
+    const browser = await launchBrowser();
+    try {
+      if (options.allProfiles) {
+        return await login.loginAll(
+          mode,
+          browser,
+          noPrompt,
+          awsNoVerifySsl,
+          forceRefresh,
+        );
+      }
+
+      return await login.loginAsync(
+        profileName,
+        mode,
+        browser,
+        noPrompt,
+        awsNoVerifySsl,
+      );
+    } finally {
+      await browser.close();
+    }
+  })
+  .then(() => {
+    process.exit(0)
   })
   .catch((err: Error) => {
     if (err.name === "CLIError") {
