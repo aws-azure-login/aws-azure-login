@@ -15,9 +15,7 @@ Install [Node.js](https://nodejs.org/) v12 or higher. Then install aws-azure-log
 
     npm install -g aws-azure-login
 
-You may need to install puppeteer dependency, if you're getting missing chrome or chromium message
-
-    node <node_modules_dir>/aws-azure-login/node_modules/puppeteer/install.js
+This fork uses `puppeteer-core` and does **not** download a bundled Chromium. You must have Google Chrome, Chromium, or Microsoft Edge already installed. The tool auto-detects the browser from known paths. If it cannot find one, set the `PUPPETEER_EXECUTABLE_PATH` environment variable to your browser executable.
 
 ### Linux
 
@@ -178,6 +176,45 @@ If you configure all profiles to stay logged in, you can easily skip the prompts
 
 This will allow you to automate the credentials refresh procedure, eg. by running a cronjob every 5 minutes.
 To skip unnecessary calls, the credentials are only getting refreshed if the time to expire is lower than 11 minutes.
+
+## Security Considerations
+
+### Storing passwords (azure_default_password)
+
+**Do not store your Azure password in `~/.aws/config` or as the `AZURE_DEFAULT_PASSWORD` environment variable unless you understand the risks.**
+
+Both locations store the password in plaintext. Anyone with read access to the file or the process environment can retrieve it. The tool will warn you at runtime when a stored password is detected.
+
+Safer alternatives that avoid storing passwords:
+- Use `--remember-me` (stores session cookies instead of a password — see [Staying logged in](#staying-logged-in-skip-usernamepassword-for-future-logins))
+- Enter the password interactively each time
+- Use a secrets manager (e.g. `pass`, macOS Keychain, Windows Credential Manager) and inject the value only at runtime
+
+### --no-verify-ssl
+
+The `--no-verify-ssl` flag disables TLS certificate verification for calls to the AWS STS API. This makes the connection vulnerable to Man-in-the-Middle (MITM) attacks: an attacker on the same network could intercept the SAML response and steal your temporary AWS credentials.
+
+**Only use this flag on isolated, fully trusted networks where you control all traffic.** The tool prints a warning when this flag is active.
+
+### Custom browser path (PUPPETEER_EXECUTABLE_PATH)
+
+This fork uses `puppeteer-core` instead of the bundled Chromium, relying on a browser already installed on your machine. You can override the browser path with:
+
+```bash
+export PUPPETEER_EXECUTABLE_PATH="/path/to/chrome"
+```
+
+The path is validated at startup: it must be an absolute path to an existing file. If it does not exist or is not absolute, the tool exits with a clear error. If the variable is not set, the tool searches known installation paths for Chrome, Chromium, and Edge on Windows, macOS, and Linux.
+
+### Protecting ~/.aws/config and ~/.aws/credentials
+
+AWS credentials and session tokens are stored in plaintext by the AWS CLI convention. Restrict access to these files:
+
+```bash
+chmod 600 ~/.aws/config ~/.aws/credentials
+```
+
+On Windows, ensure the files are not synced to shared locations (OneDrive, network drives) without encryption.
 
 ## Getting Your Tenant ID and App ID URI
 

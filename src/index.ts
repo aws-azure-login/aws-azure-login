@@ -57,6 +57,14 @@ program
 
 const options = program.opts();
 
+if (!options.verifySsl) {
+  console.warn(
+    "\n⚠️  WARNING: --no-verify-ssl disables TLS certificate verification for AWS STS calls.\n" +
+    "   This makes the connection vulnerable to Man-in-the-Middle (MITM) attacks.\n" +
+    "   Credentials obtained may be intercepted. Use only in isolated/trusted networks.\n"
+  );
+}
+
 const profileName =
   (options.profile as string | undefined) ||
   process.env.AWS_PROFILE ||

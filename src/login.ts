@@ -5,7 +5,8 @@ import zlib from "zlib";
 import { STS, STSClientConfig } from "@aws-sdk/client-sts";
 import { load } from "cheerio";
 import { v4 } from "uuid";
-import puppeteer, { HTTPRequest } from "puppeteer";
+import puppeteer, { HTTPRequest } from "puppeteer-core";
+import type { Page, Browser, ElementHandle } from "puppeteer-core";
 import querystring from "querystring";
 import _debug from "debug";
 import { CLIError } from "./CLIError";
@@ -15,8 +16,65 @@ import { paths } from "./paths";
 import mkdirp from "mkdirp";
 import { Agent } from "https";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
+import fs from "fs";
+import path from "path";
 
 const debug = _debug("aws-azure-login");
+
+const KNOWN_CHROME_PATHS: Record<string, string[]> = {
+  win32: [
+    "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe",
+    `${process.env.LOCALAPPDATA}/Google/Chrome/Application/chrome.exe`,
+    "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+    "C:/Program Files/Microsoft/Edge/Application/msedge.exe",
+  ],
+  darwin: [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Chromium.app/Contents/MacOS/Chromium",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+  ],
+  linux: [
+    "/usr/bin/google-chrome",
+    "/usr/bin/google-chrome-stable",
+    "/usr/bin/chromium-browser",
+    "/usr/bin/chromium",
+    "/usr/bin/microsoft-edge",
+    "/snap/bin/chromium",
+  ],
+};
+
+function resolveChromiumPath(): string {
+  const envPath = process.env.PUPPETEER_EXECUTABLE_PATH;
+
+  if (envPath) {
+    const resolved = path.resolve(envPath);
+    if (!fs.existsSync(resolved)) {
+      throw new CLIError(
+        `PUPPETEER_EXECUTABLE_PATH "${resolved}" does not exist. Please set it to a valid browser executable.`
+      );
+    }
+    const isAbsolute = path.isAbsolute(resolved);
+    const staysInPlace = resolved === path.normalize(resolved);
+    if (!isAbsolute || !staysInPlace) {
+      throw new CLIError(
+        `PUPPETEER_EXECUTABLE_PATH "${resolved}" is not a valid absolute path.`
+      );
+    }
+    return resolved;
+  }
+
+  const candidates = KNOWN_CHROME_PATHS[process.platform] ?? [];
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  throw new CLIError(
+    "Could not find a browser to launch. Please set PUPPETEER_EXECUTABLE_PATH to your Chrome/Chromium/Edge executable."
+  );
+}
 
 const WIDTH = 425;
 const HEIGHT = 550;
@@ -46,8 +104,8 @@ const states = [
     name: "username input",
     selector: `input[name="loginfmt"]:not(.moveOffScreen)`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       noPrompt: boolean,
       defaultUsername: string
     ): Promise<void> {
@@ -129,7 +187,7 @@ const states = [
   {
     name: "account selection",
     selector: `#aadTile > div > div.table-cell.tile-img > img`,
-    async handler(page: puppeteer.Page): Promise<void> {
+    async handler(page: Page): Promise<void> {
       debug("Multiple accounts associated with username.");
       const aadTile = await page.$("#aadTileTitle");
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -187,7 +245,7 @@ const states = [
   {
     name: "passwordless",
     selector: `input[value='Send notification']`,
-    async handler(page: puppeteer.Page) {
+    async handler(page: Page) {
       debug("Sending notification");
       // eslint-disable-next-line
       await page.click("input[value='Send notification']");
@@ -230,8 +288,8 @@ const states = [
     name: "password input",
     selector: `input[name="Password"]:not(.moveOffScreen),input[name="passwd"]:not(.moveOffScreen)`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       noPrompt: boolean,
       _defaultUsername: string,
       defaultPassword: string
@@ -283,8 +341,8 @@ const states = [
     name: "TFA instructions",
     selector: `#idDiv_SAOTCAS_Description`,
     async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      page: Page,
+      selected: ElementHandle
     ): Promise<void> {
       const descriptionMessage = (await page.evaluate(
         // eslint-disable-next-line
@@ -322,8 +380,8 @@ const states = [
     name: "TFA failed",
     selector: `#idDiv_SAASDS_Description,#idDiv_SAASTO_Description`,
     async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      page: Page,
+      selected: ElementHandle
     ): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
@@ -338,7 +396,7 @@ const states = [
   {
     name: "TFA code input",
     selector: "input[name=otc]:not(.moveOffScreen)",
-    async handler(page: puppeteer.Page): Promise<void> {
+    async handler(page: Page): Promise<void> {
       const error = await page.$(".alert-error");
       if (error) {
         debug("Found error message. Displaying");
@@ -402,8 +460,8 @@ const states = [
     name: "Remember me",
     selector: `#KmsiDescription`,
     async handler(
-      page: puppeteer.Page,
-      _selected: puppeteer.ElementHandle,
+      page: Page,
+      _selected: ElementHandle,
       _noPrompt: boolean,
       _defaultUsername: string,
       _defaultPassword: string | undefined,
@@ -425,8 +483,8 @@ const states = [
     name: "Service exception",
     selector: "#service_exception_message",
     async handler(
-      page: puppeteer.Page,
-      selected: puppeteer.ElementHandle
+      page: Page,
+      selected: ElementHandle
     ): Promise<void> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const descriptionMessage = await page.evaluate(
@@ -467,6 +525,16 @@ export const login = {
     }
 
     const profile = await this._loadProfileAsync(profileName);
+
+    if (profile.azure_default_password) {
+      console.warn(
+        "\n⚠️  WARNING: azure_default_password is set in your AWS config.\n" +
+        "   Storing passwords in plaintext in ~/.aws/config is a security risk.\n" +
+        "   Anyone with read access to that file can obtain your Azure password.\n" +
+        "   Consider removing it and entering your password interactively.\n"
+      );
+    }
+
     let assertionConsumerServiceURL = AWS_SAML_ENDPOINT;
     if (profile.region && profile.region.startsWith("us-gov")) {
       assertionConsumerServiceURL = AWS_GOV_SAML_ENDPOINT;
@@ -689,7 +757,7 @@ export const login = {
   ): Promise<string> {
     debug("Loading login page in Chrome");
 
-    let browser: puppeteer.Browser | undefined;
+    let browser: Browser | undefined;
 
     try {
       const args = headless
@@ -721,6 +789,7 @@ export const login = {
       }
 
       browser = await puppeteer.launch({
+        executablePath: resolveChromiumPath(),
         headless,
         args,
         ignoreDefaultArgs,
