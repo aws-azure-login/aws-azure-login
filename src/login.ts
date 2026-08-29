@@ -15,6 +15,7 @@ import { paths } from "./paths";
 import mkdirp from "mkdirp";
 import { Agent } from "https";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
+import fs from "fs";
 
 const debug = _debug("aws-azure-login");
 
@@ -44,7 +45,7 @@ interface Role {
 const states = [
   {
     name: "username input",
-    selector: `input[name="loginfmt"]:not(.moveOffScreen)`,
+    selector: `input[name="loginfmt"]:not(.moveOffScreen):not([type="hidden"])`,
     async handler(
       page: puppeteer.Page,
       _selected: puppeteer.ElementHandle,
@@ -182,6 +183,75 @@ const states = [
       debug(`Proceeding with account ${account.selector}`);
       await page.click(account.selector);
       await Bluebird.delay(500);
+    },
+  },
+  {
+    name: "credential picker",
+    selector: `#credentialList div[data-test-cred-id]`,
+    async handler(page: puppeteer.Page): Promise<void> {
+      debug("Multiple sign-in methods available. Choosing Authenticator app.");
+      let tile = await page.$(
+        `div[aria-label*="Approve a request on my Microsoft Authenticator app"]`
+      );
+      if (!tile) {
+        debug(
+          "Authenticator app option not offered. Falling back to password."
+        );
+        tile = await page.$(`div[aria-label="Use my password"]`);
+      }
+      if (!tile) {
+        throw new CLIError(
+          "Unable to find a usable sign-in method on the credential picker screen."
+        );
+      }
+      await tile.click();
+      await Bluebird.delay(500);
+    },
+  },
+  {
+    name: "RemoteNGC notification",
+    selector: `#idDiv_RemoteNGC_PageDescription, #idDiv_RemoteNGC_PollingDescription`,
+    async handler(page: puppeteer.Page): Promise<void> {
+      const descriptionElement = await page.$(
+        "#idDiv_RemoteNGC_PageDescription, #idDiv_RemoteNGC_PollingDescription"
+      );
+      if (descriptionElement) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const descriptionMessage = await page.evaluate(
+          // eslint-disable-next-line
+          (el) => el.textContent,
+          descriptionElement
+        );
+        console.log(descriptionMessage);
+      }
+
+      const codeElement = await page.$("#idRemoteNGC_DisplaySign");
+      if (codeElement) {
+        debug("Printing the auth code");
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const authCode = await page.evaluate(
+          // eslint-disable-next-line
+          (el) => el.textContent,
+          codeElement
+        );
+        console.log(authCode);
+        debug("Waiting for response");
+        await page.waitForSelector(`#idRemoteNGC_DisplaySign`, {
+          hidden: true,
+          timeout: 60000,
+        });
+        return;
+      }
+
+      const errorElement = await page.$("#idDiv_RemoteNGC_PageDescription");
+      if (errorElement) {
+        throw new CLIError(
+          "Microsoft was unable to send the Authenticator push notification. Please try logging in again in a moment."
+        );
+      }
+
+      debug("Waiting for the code to be displayed");
+      await Bluebird.delay(1000);
     },
   },
   {
@@ -843,6 +913,10 @@ export const login = {
             if (totalUnrecognizedDelay > MAX_UNRECOGNIZED_PAGE_DELAY) {
               const path = "aws-azure-login-unrecognized-state.png";
               await page.screenshot({ path });
+              fs.writeFileSync(
+                "aws-azure-login-unrecognized-state.html",
+                await page.content()
+              );
               throw new CLIError(
                 `Unable to recognize page state! A screenshot has been dumped to ${path}. If this problem persists, try running with --mode=gui or --mode=debug`
               );
